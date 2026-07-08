@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("CUSTOMER") // ADMIN | CUSTOMER
+  phone        String?
+  image        String?
+  language     String   @default("sq")
+  theme        String   @default("light")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+  notifications Notification[]
+  activities    ActivityLog[]
+  resetTokens   PasswordResetToken[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Address {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label     String   @default("Shtëpia")
+  street    String
+  city      String
+  zip       String?
+  phone     String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  brand         String
+  category      String // SPLIT | MULTI | STANDING | HEATPUMP | BOILER | ACCESSORY
+  price         Int
+  oldPrice      Int?
+  shortDesc     String
+  description   String
+  btu           Int?
+  coverageM2    Int?
+  energyCool    String?
+  energyHeat    String?
+  seer          Float?
+  scop          Float?
+  refrigerant   String?
+  noiseDb       Int?
+  wifi          Boolean  @default(false)
+  inverter      Boolean  @default(false)
+  warrantyYears Int      @default(2)
+  stock         Int      @default(0)
+  featured      Boolean  @default(false)
+  badge         String?
+  render        String   @default("wall") // wall | standing | outdoor | boiler | pipe | bracket
+  accent        String   @default("blue") // blue | graphite | frost | pearl
+  features      String   @default("[]") // JSON array (string)
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems OrderItem[]
+  reviews    Review[]
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  productId  String?
+  product    Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  authorName String
+  city       String?
+  rating     Int
+  text       String
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Order {
+  id               String   @id @default(cuid())
+  orderNo          String   @unique
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  customerName     String
+  email            String
+  phone            String
+  city             String
+  street           String
+  note             String?
+  withInstallation Boolean  @default(true)
+  status           String   @default("PENDING") // PENDING | CONFIRMED | INSTALLING | COMPLETED | CANCELLED
+  total            Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  name      String
+  price     Int
+  qty       Int      @default(1)
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  type      String   @default("info") // info | order | promo | security
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  actor     String
+  action    String
+  detail    String?
+  createdAt DateTime @default(now())
+}
