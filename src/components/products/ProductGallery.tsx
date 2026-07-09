@@ -65,7 +65,7 @@ function PhotoGallery({ images, name }: { images: string[]; name: string }) {
       </div>
 
       {images.length > 1 && (
-        <div className="mt-3 grid grid-cols-4 gap-3" role="tablist" aria-label={`Imazhet e ${name}`}>
+        <div className="mt-3 grid grid-cols-3 gap-2.5 sm:grid-cols-4 sm:gap-3" role="tablist" aria-label={`Imazhet e ${name}`}>
           {images.map((url, i) => (
             <button
               key={url}

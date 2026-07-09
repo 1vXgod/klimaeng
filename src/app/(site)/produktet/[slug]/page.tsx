@@ -81,7 +81,7 @@ export default async function ProductPage({
           <span className="truncate font-medium text-ink">{product.name}</span>
         </nav>
 
-        <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
+        <div className="grid gap-8 sm:gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           <Reveal>
             <ProductGallery
               render={product.render}
@@ -106,7 +106,7 @@ export default async function ProductPage({
         </div>
 
         {/* description + specs */}
-        <div className="mt-16 grid gap-10 lg:mt-24 lg:grid-cols-[1.5fr_1fr] lg:gap-14">
+        <div className="mt-12 grid gap-10 sm:mt-16 lg:mt-24 lg:grid-cols-[1.5fr_1fr] lg:gap-14">
           <div>
             <Reveal>
               <h2 className="font-display text-2xl font-bold text-ink">Përshkrimi</h2>
@@ -135,15 +135,15 @@ export default async function ProductPage({
 
             <Reveal delay={0.1}>
               <h3 className="mt-10 font-display text-lg font-bold text-ink">Specifikat teknike</h3>
-              <div className="mt-4 overflow-hidden rounded-2xl border border-line">
-                <table className="w-full text-sm">
+              <div className="mt-4 overflow-x-auto rounded-2xl border border-line">
+                <table className="w-full min-w-[280px] text-sm">
                   <tbody className="divide-y divide-line">
                     {specs.map(([key, value], i) => (
                       <tr key={key} className={i % 2 === 0 ? "bg-surface" : "bg-surface-2/50"}>
-                        <th scope="row" className="w-1/2 px-5 py-3 text-left font-medium text-muted">
+                        <th scope="row" className="w-1/2 px-4 py-2.5 text-left font-medium text-muted sm:px-5 sm:py-3">
                           {key}
                         </th>
-                        <td className="px-5 py-3 font-semibold text-ink">{value}</td>
+                        <td className="px-4 py-2.5 font-semibold text-ink sm:px-5 sm:py-3">{value}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -174,7 +174,7 @@ export default async function ProductPage({
 
         {/* similar */}
         {similar.length > 0 && (
-          <div className="mt-20 lg:mt-28">
+          <div className="mt-14 sm:mt-20 lg:mt-28">
             <Reveal>
               <h2 className="font-display text-2xl font-bold text-ink">Produkte të ngjashme</h2>
             </Reveal>

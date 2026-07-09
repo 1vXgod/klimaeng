@@ -38,14 +38,20 @@ export function BtuPricingCards({
       role={selectable ? "radiogroup" : undefined}
       aria-label={selectable ? "Zgjidhni kapacitetin" : undefined}
       className={cn(
-        "grid gap-3",
-        // auto-fill keeps every card the same width when they wrap on
-        // narrow screens (no stretched odd-one-out on the last row)
-        selectable ? "grid-cols-[repeat(auto-fill,minmax(8.25rem,1fr))]" : "grid-cols-1"
+        // fixed 2-up grid on narrow phones so cards stay full-size and
+        // readable; auto-fill takes over once there's room to size by content.
+        // Used unconditionally (even for a single variant) so a lone card's
+        // track width matches a card's width in the 2-/3-card layouts instead
+        // of stretching to fill the row.
+        "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(8.25rem,1fr))]"
       )}
     >
       {variants.map((v, i) => {
         const active = selectable && i === selected;
+        // with an odd count, let the trailing card span both mobile columns
+        // instead of sitting alone with an empty slot beside it
+        const isTrailingOdd =
+          selectable && variants.length % 2 === 1 && i === variants.length - 1;
         const body = (
           <>
             {selectable && (
@@ -99,6 +105,7 @@ export function BtuPricingCards({
 
         const cardCls = cn(
           "group relative flex flex-col items-center rounded-2xl border px-3 pt-5 pb-4 text-center transition-all duration-200",
+          isTrailingOdd && "col-span-2 sm:col-span-1",
           active
             ? "border-brand-400 bg-gradient-to-b from-brand-50/80 to-surface ring-1 ring-brand-400/30 card-shadow dark:border-brand-500/50 dark:from-brand-500/10 dark:to-surface"
             : "border-line bg-gradient-to-b from-surface to-surface-2/50"

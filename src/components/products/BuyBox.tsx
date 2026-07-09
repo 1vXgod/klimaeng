@@ -101,7 +101,7 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
 
       {/* qty + actions */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <div className="flex h-13 items-center rounded-full border border-line-2 bg-surface">
+        <div className="flex h-13 shrink-0 items-center rounded-full border border-line-2 bg-surface">
           <button
             onClick={() => setQty((q) => Math.max(1, q - 1))}
             aria-label="Zvogëlo sasinë"
@@ -147,7 +147,7 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
             toast("U shtua në shportë");
           }}
           disabled={soldOut}
-          className="inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-7 text-[15px] font-semibold text-white shadow-[0_10px_24px_-6px_rgba(36,86,224,0.55)] transition-all hover:shadow-[0_14px_30px_-6px_rgba(36,86,224,0.6)] active:scale-[0.98] disabled:opacity-40 focus-ring min-w-44"
+          className="order-last inline-flex h-13 flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-b from-brand-500 to-brand-600 px-7 text-[15px] font-semibold text-white shadow-[0_10px_24px_-6px_rgba(36,86,224,0.55)] transition-all hover:shadow-[0_14px_30px_-6px_rgba(36,86,224,0.6)] active:scale-[0.98] disabled:opacity-40 focus-ring sm:order-none min-w-44"
         >
           <ShoppingBag size={18} />
           Shto në Shportë
@@ -161,7 +161,7 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
           aria-label="Shto në listën e dëshirave"
           aria-pressed={inWishlist}
           className={cn(
-            "grid h-13 w-13 place-items-center rounded-full border transition-all focus-ring",
+            "grid h-13 w-13 shrink-0 place-items-center rounded-full border transition-all focus-ring",
             inWishlist
               ? "border-red-200 bg-red-50 text-red-500 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400"
               : "border-line-2 bg-surface text-muted hover:text-red-500"
@@ -182,7 +182,7 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
           aria-label="Shto për krahasim"
           aria-pressed={inCompare}
           className={cn(
-            "grid h-13 w-13 place-items-center rounded-full border transition-all focus-ring",
+            "grid h-13 w-13 shrink-0 place-items-center rounded-full border transition-all focus-ring",
             inCompare
               ? "border-brand-300 bg-brand-50 text-brand-600 dark:border-brand-500/30 dark:bg-brand-500/10 dark:text-brand-300"
               : "border-line-2 bg-surface text-muted hover:text-brand-600"
