@@ -74,7 +74,12 @@ export default async function ProductPage({
 
         <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           <Reveal>
-            <ProductGallery render={product.render} accent={product.accent} name={product.name} />
+            <ProductGallery
+              render={product.render}
+              accent={product.accent}
+              name={product.name}
+              imageUrl={product.imageUrl}
+            />
           </Reveal>
           <Reveal delay={0.08}>
             <BuyBox

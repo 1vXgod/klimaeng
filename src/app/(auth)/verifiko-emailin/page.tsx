@@ -15,7 +15,6 @@ function VerifyEmailInner() {
 
   const [email, setEmail] = useState(emailFromQuery);
   const [sent, setSent] = useState(false);
-  const [demoCode, setDemoCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const requested = useRef(false);
@@ -26,8 +25,9 @@ function VerifyEmailInner() {
       requested.current = true;
       void resendVerificationCode(emailFromQuery).then((r) => {
         if (r.ok) {
-          setDemoCode(r.demoCode ?? null);
           setSent(true);
+        } else {
+          setError(r.error);
         }
       });
     }
@@ -43,7 +43,6 @@ function VerifyEmailInner() {
         return;
       }
       setEmail(value);
-      setDemoCode(result.demoCode ?? null);
       setSent(true);
     });
   };
@@ -100,11 +99,10 @@ function VerifyEmailInner() {
       submitLabel="Verifiko llogarinë"
       busy={isPending}
       error={error}
-      demoCode={demoCode}
       onSubmit={submitCode}
       onResend={async () => {
         const result = await resendVerificationCode(email);
-        if (result.ok && result.demoCode) setDemoCode(result.demoCode);
+        if (!result.ok) setError(result.error);
       }}
     />
   );

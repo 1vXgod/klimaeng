@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<"form" | "code">("form");
   const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
-  const [demoCode, setDemoCode] = useState<string | null>(null);
 
   const submitForm = (formData: FormData) => {
     setError(null);
@@ -36,7 +35,6 @@ export default function RegisterPage() {
         return;
       }
       setCredentials({ email, password });
-      setDemoCode(result.demoCode ?? null);
       setStep("code");
     });
   };
@@ -64,11 +62,10 @@ export default function RegisterPage() {
         submitLabel="Verifiko dhe kyçu"
         busy={isPending}
         error={error}
-        demoCode={demoCode}
         onSubmit={submitCode}
         onResend={async () => {
           const result = await resendVerificationCode(credentials.email);
-          if (result.ok && result.demoCode) setDemoCode(result.demoCode);
+          if (!result.ok) setError(result.error);
         }}
       />
     );

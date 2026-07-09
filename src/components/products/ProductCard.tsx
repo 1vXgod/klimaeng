@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Heart, Scale, ShoppingBag, Wifi } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { ProductVisual } from "@/components/renders/ProductRender";
 import { Badge } from "@/components/ui/Badge";
@@ -36,6 +37,13 @@ export function ProductCard({
   const inWishlist = mounted && wishlist.has(product.id);
   const inCompare = mounted && compare.has(product.id);
   const soldOut = product.stock !== undefined && product.stock <= 0;
+
+  // TODO: temporary debug — remove after verifying public images
+  console.log(
+    "[debug] ProductCard image src:",
+    product.name,
+    product.imageUrl ?? "(no imageUrl — SVG render fallback)"
+  );
 
   return (
     <motion.article
@@ -102,11 +110,23 @@ export function ProductCard({
         aria-label={product.name}
       >
         <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-b from-surface-2 to-surface-3/60">
-          <ProductVisual
-            render={product.render}
-            accent={product.accent}
-            className="h-full w-full p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
-          />
+          {product.imageUrl ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              fill
+              // unoptimized matches the admin preview: uploads may be SVG,
+              // which the image optimizer rejects without dangerouslyAllowSVG
+              unoptimized
+              className="object-contain p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+            />
+          ) : (
+            <ProductVisual
+              render={product.render}
+              accent={product.accent}
+              className="h-full w-full p-3 transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+            />
+          )}
         </div>
       </Link>
 

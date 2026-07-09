@@ -108,6 +108,7 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
 
   revalidatePath("/admin/produktet");
   revalidatePath("/produktet");
+  revalidatePath("/produktet/[slug]", "page");
   revalidatePath("/");
   return { ok: true, id };
 }

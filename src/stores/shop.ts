@@ -13,6 +13,7 @@ export type ProductSnapshot = {
   oldPrice?: number | null;
   render: string;
   accent: string;
+  imageUrl?: string | null;
   category: string;
   btu?: number | null;
   energyCool?: string | null;

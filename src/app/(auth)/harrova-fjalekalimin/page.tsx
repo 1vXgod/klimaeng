@@ -12,7 +12,6 @@ export default function ForgotPasswordPage() {
   const [isPending, startTransition] = useTransition();
   const [step, setStep] = useState<"email" | "code" | "done">("email");
   const [email, setEmail] = useState("");
-  const [demoCode, setDemoCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -27,7 +26,6 @@ export default function ForgotPasswordPage() {
         return;
       }
       setEmail(value);
-      setDemoCode(result.demoCode ?? null);
       setStep("code");
     });
   };
@@ -80,11 +78,10 @@ export default function ForgotPasswordPage() {
         submitLabel="Ruaj fjalëkalimin e ri"
         busy={isPending}
         error={error}
-        demoCode={demoCode}
         onSubmit={submitCode}
         onResend={async () => {
           const result = await requestPasswordReset(email);
-          if (result.ok && result.demoCode) setDemoCode(result.demoCode);
+          if (!result.ok) setError(result.error);
         }}
       >
         <Field label="Fjalëkalimi i ri" hint="Të paktën 8 karaktere">

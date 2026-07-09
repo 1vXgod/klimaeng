@@ -1,5 +1,6 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { receiptEmail } from "@/lib/email-templates";
@@ -21,7 +22,34 @@ export type OrderResult =
   | { ok: true; orderNo: string }
   | { ok: false; error: string };
 
+/**
+ * Highest numeric order number issued so far. Order numbers must come from
+ * the maximum, not from the most recently created row — createdAt order and
+ * numbering order are not the same thing.
+ */
+async function nextOrderNo(tx: Prisma.TransactionClient): Promise<string> {
+  const [row] = await tx.$queryRaw<{ max: number | null }[]>`
+    SELECT MAX(CAST(SUBSTRING("orderNo" FROM 4) AS INTEGER)) AS max
+    FROM "Order"
+    WHERE "orderNo" ~ '^KE-[0-9]+$'
+  `;
+  return `KE-${(row?.max ?? 1000) + 1}`;
+}
+
 export async function createOrder(input: OrderInput): Promise<OrderResult> {
+  try {
+    return await createOrderInner(input);
+  } catch (e) {
+    console.error("[order] createOrder failed:", e);
+    return {
+      ok: false,
+      error:
+        "Porosia nuk u regjistrua nga një gabim i brendshëm. Provoni përsëri — nëse problemi vazhdon, na telefononi në +383 44 000 000.",
+    };
+  }
+}
+
+async function createOrderInner(input: OrderInput): Promise<OrderResult> {
   const name = input.customerName?.trim();
   const email = input.email?.trim().toLowerCase();
   const phone = input.phone?.trim();
@@ -58,63 +86,84 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
   }
 
   const total = items.reduce((sum, { product, qty }) => sum + product.price * qty, 0);
-  const session = await auth();
 
-  const last = await prisma.order.findFirst({
-    orderBy: { createdAt: "desc" },
-    select: { orderNo: true },
-  });
-  const lastNo = last ? parseInt(last.orderNo.replace("KE-", ""), 10) : 1000;
-  const orderNo = `KE-${(Number.isNaN(lastNo) ? 1000 : lastNo) + 1}`;
+  // A broken/misconfigured session must never block a guest order.
+  const session = await auth().catch(() => null);
+  // Sessions outlive database rows (JWT lasts 30 days) — attach the user
+  // only if the id still exists, otherwise record the order as a guest's.
+  const sessionUserId = session?.user?.id ?? null;
+  const user = sessionUserId
+    ? await prisma.user.findUnique({ where: { id: sessionUserId }, select: { id: true } })
+    : null;
 
-  const order = await prisma.$transaction(async (tx) => {
-    const created = await tx.order.create({
-      data: {
-        orderNo,
-        userId: session?.user?.id ?? null,
-        customerName: name,
-        email,
-        phone,
-        city,
-        street,
-        note: input.note?.trim() || null,
-        withInstallation: input.withInstallation,
-        total,
-        items: {
-          create: items.map(({ product, qty }) => ({
-            productId: product.id,
-            name: product.name,
-            price: product.price,
-            qty,
-          })),
-        },
+  const runTransaction = () =>
+    prisma.$transaction(
+      async (tx) => {
+        const orderNo = await nextOrderNo(tx);
+        const created = await tx.order.create({
+          data: {
+            orderNo,
+            userId: user?.id ?? null,
+            customerName: name,
+            email,
+            phone,
+            city,
+            street,
+            note: input.note?.trim() || null,
+            withInstallation: input.withInstallation,
+            total,
+            items: {
+              create: items.map(({ product, qty }) => ({
+                productId: product.id,
+                name: product.name,
+                price: product.price,
+                qty,
+              })),
+            },
+          },
+        });
+        for (const { product, qty } of items) {
+          await tx.product.update({
+            where: { id: product.id },
+            data: { stock: { decrement: qty } },
+          });
+        }
+        await tx.activityLog.create({
+          data: {
+            actor: name,
+            action: "Porosi e re",
+            detail: `${created.orderNo} — ${items.length} artikuj, ${total}€`,
+          },
+        });
+        if (user?.id) {
+          await tx.notification.create({
+            data: {
+              userId: user.id,
+              title: "Porosia u pranua",
+              body: `Porosia ${created.orderNo} u regjistrua me sukses. Do t'ju kontaktojmë brenda 24 orëve për konfirmim.`,
+              type: "order",
+            },
+          });
+        }
+        return created;
       },
-    });
-    for (const { product, qty } of items) {
-      await tx.product.update({
-        where: { id: product.id },
-        data: { stock: { decrement: qty } },
-      });
+      // Generous limits so a cold database (serverless resume) can't abort
+      // an otherwise healthy checkout.
+      { maxWait: 10_000, timeout: 20_000 }
+    );
+
+  let order: Awaited<ReturnType<typeof runTransaction>>;
+  try {
+    order = await runTransaction();
+  } catch (e) {
+    // Two checkouts read the same MAX concurrently — one hits the unique
+    // constraint on orderNo. Retry once with a fresh number.
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
+      order = await runTransaction();
+    } else {
+      throw e;
     }
-    await tx.activityLog.create({
-      data: {
-        actor: name,
-        action: "Porosi e re",
-        detail: `${created.orderNo} — ${items.length} artikuj, ${total}€`,
-      },
-    });
-    if (session?.user?.id) {
-      await tx.notification.create({
-        data: {
-          userId: session.user.id,
-          title: "Porosia u pranua",
-          body: `Porosia ${created.orderNo} u regjistrua me sukses. Do t'ju kontaktojmë brenda 24 orëve për konfirmim.`,
-          type: "order",
-        },
-      });
-    }
-    return created;
-  });
+  }
 
   // Receipt email — best-effort: a mail failure must never fail the order.
   try {
@@ -133,7 +182,10 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
       street,
       withInstallation: input.withInstallation,
     });
-    await sendMail({ to: email, ...template });
+    const sent = await sendMail({ to: email, ...template });
+    if (!sent.delivered) {
+      console.error(`[order] receipt for ${order.orderNo} not delivered: ${sent.error ?? "unknown"}`);
+    }
   } catch (e) {
     console.error("[order] receipt email failed:", e);
   }

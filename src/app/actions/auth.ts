@@ -7,8 +7,6 @@ import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 
 type Result = { ok: true } | { ok: false; error: string };
-/** `demoCode` is only populated when no email provider is configured, so the UI can show the code during development. */
-type CodeResult = { ok: true; demoCode?: string } | { ok: false; error: string };
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const RESEND_COOLDOWN_MS = 60 * 1000;
@@ -28,7 +26,7 @@ async function issueCode(
   email: string,
   purpose: string,
   recipientName: string
-): Promise<CodeResult> {
+): Promise<Result> {
   const latest = await prisma.verificationCode.findFirst({
     where: { email, purpose },
     orderBy: { createdAt: "desc" },
@@ -39,7 +37,7 @@ async function issueCode(
 
   const code = String(crypto.randomInt(100000, 1000000));
   await prisma.verificationCode.deleteMany({ where: { email, purpose } });
-  await prisma.verificationCode.create({
+  const record = await prisma.verificationCode.create({
     data: { email, code, purpose, expiresAt: new Date(Date.now() + CODE_TTL_MS) },
   });
 
@@ -49,7 +47,16 @@ async function issueCode(
       : resetCodeEmail(recipientName, code);
   const result = await sendMail({ to: email, ...template });
 
-  return result.delivered ? { ok: true } : { ok: true, demoCode: code };
+  if (!result.delivered) {
+    // Remove the unusable code so the cooldown doesn't block an immediate retry.
+    await prisma.verificationCode.delete({ where: { id: record.id } }).catch(() => {});
+    return {
+      ok: false,
+      error:
+        "Dërgimi i email-it dështoi. Provoni përsëri pas pak — nëse problemi vazhdon, na kontaktoni në info@klimaeng.com.",
+    };
+  }
+  return { ok: true };
 }
 
 /** Checks a submitted code; consumes it on success, counts attempts on failure. */
@@ -84,7 +91,7 @@ export async function registerUser(input: {
   email: string;
   phone?: string;
   password: string;
-}): Promise<CodeResult> {
+}): Promise<Result> {
   const name = input.name?.trim();
   const email = normalizeEmail(input.email);
   const password = input.password ?? "";
@@ -136,7 +143,7 @@ export async function verifyEmail(input: { email: string; code: string }): Promi
   return { ok: true };
 }
 
-export async function resendVerificationCode(emailRaw: string): Promise<CodeResult> {
+export async function resendVerificationCode(emailRaw: string): Promise<Result> {
   const email = normalizeEmail(emailRaw);
   const user = await prisma.user.findUnique({ where: { email } });
   // Never reveal whether an account exists.
@@ -159,7 +166,7 @@ export async function loginPrecheck(emailRaw: string): Promise<{ unverified: boo
 // Password reset with code
 // ---------------------------------------------------------------------------
 
-export async function requestPasswordReset(emailRaw: string): Promise<CodeResult> {
+export async function requestPasswordReset(emailRaw: string): Promise<Result> {
   const email = normalizeEmail(emailRaw);
   if (!email) return { ok: true };
   const user = await prisma.user.findUnique({ where: { email } });

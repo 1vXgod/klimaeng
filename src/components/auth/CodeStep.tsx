@@ -4,11 +4,7 @@ import { Loader2, MailCheck, RotateCcw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 
-/**
- * Reusable 6-digit code entry block for email verification / password reset.
- * `demoCode` (present only when no email provider is configured) is shown as
- * a development hint so the flow stays fully usable without SMTP/Resend.
- */
+/** Reusable 6-digit code entry block for email verification / password reset. */
 export function CodeStep({
   email,
   title = "Shkruani kodin e verifikimit",
@@ -16,7 +12,6 @@ export function CodeStep({
   submitLabel = "Verifiko",
   busy,
   error,
-  demoCode,
   onSubmit,
   onResend,
   children,
@@ -27,7 +22,6 @@ export function CodeStep({
   submitLabel?: string;
   busy?: boolean;
   error?: string | null;
-  demoCode?: string | null;
   onSubmit: (code: string) => void;
   onResend: () => Promise<void> | void;
   children?: React.ReactNode;
@@ -93,14 +87,6 @@ export function CodeStep({
         {error && (
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
             {error}
-          </p>
-        )}
-
-        {demoCode && (
-          <p className="rounded-xl border border-dashed border-line-2 bg-surface px-4 py-2.5 text-xs text-muted">
-            <strong className="text-ink-2">Modalitet demo</strong> (asnjë provajder
-            email-i i konfiguruar) — kodi juaj:{" "}
-            <strong className="font-mono text-brand-600 dark:text-brand-300">{demoCode}</strong>
           </p>
         )}
 

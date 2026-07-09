@@ -2,7 +2,6 @@
 
 import {
   Building2,
-  Database,
   MessageSquareText,
   Moon,
   Sun,
@@ -171,23 +170,6 @@ NEXT_PUBLIC_3CX_CHAT_URL="https://juaj.3cx.eu"`}
         </div>
       </section>
 
-      {/* data */}
-      <section className="rounded-3xl border border-line bg-surface p-6 card-shadow md:p-7">
-        <div className="flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
-            <Database size={19} />
-          </span>
-          <div>
-            <h2 className="font-display text-lg font-bold text-ink">Të dhënat demo</h2>
-            <p className="text-sm text-muted">Baza është e mbushur me të dhëna shembull.</p>
-          </div>
-        </div>
-        <p className="mt-4 rounded-2xl bg-surface-2/70 p-4 text-[13px] leading-relaxed text-ink-2">
-          Për të rikthyer katalogun dhe porositë demo në gjendjen fillestare,
-          ekzekutoni në terminal:{" "}
-          <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs">npm run db:seed</code>
-        </p>
-      </section>
     </div>
   );
 }

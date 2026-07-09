@@ -1,13 +1,15 @@
 /**
- * Provider-agnostic email sender.
+ * Transactional email sender (Resend — https://resend.com).
  *
- * Providers (resolved from env, no code changes to swap):
- *  - RESEND_API_KEY set  → sends through the Resend API (works on Vercel).
- *    Optional EMAIL_FROM, e.g. `KlimaENG <info@klimaeng.com>` — the domain
- *    must be verified in Resend; without it the Resend sandbox sender is used.
- *  - otherwise           → demo mode: the email is logged to the server
- *    console and `delivered: false` is returned, so callers can surface
- *    verification codes directly in the UI during development.
+ * Required environment:
+ *  - RESEND_API_KEY  API key from the Resend dashboard.
+ *  - EMAIL_FROM      Verified sender, e.g. `KlimaENG <info@klimaeng.com>`.
+ *                    The domain must be verified in Resend; while it isn't,
+ *                    Resend's sandbox sender is used as a fallback.
+ *
+ * There is intentionally no "demo mode": verification codes and receipts are
+ * never logged or surfaced anywhere except the recipient's inbox. A missing
+ * key returns `delivered: false` so callers can show a configuration error.
  */
 
 export type MailResult = { delivered: boolean; error?: string };
@@ -23,10 +25,10 @@ export async function sendMail(input: MailInput): Promise<MailResult> {
   const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.log(
-      `[mail:demo] To: ${input.to}\n[mail:demo] Subject: ${input.subject}\n[mail:demo] ${input.text.slice(0, 300)}`
+    console.error(
+      "[mail] RESEND_API_KEY is not set — cannot deliver email. Configure it in .env and in the Vercel project settings."
     );
-    return { delivered: false };
+    return { delivered: false, error: "email_not_configured" };
   }
 
   try {
@@ -37,7 +39,7 @@ export async function sendMail(input: MailInput): Promise<MailResult> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: process.env.EMAIL_FROM ?? "KlimaENG <onboarding@resend.dev>",
+        from: process.env.EMAIL_FROM || "KlimaENG <onboarding@resend.dev>",
         to: [input.to],
         subject: input.subject,
         html: input.html,

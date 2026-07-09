@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { useState } from "react";
 import { ProductRender, ProductVisual } from "@/components/renders/ProductRender";
 import { cn } from "@/lib/utils";
@@ -17,10 +18,12 @@ export function ProductGallery({
   render,
   accent,
   name,
+  imageUrl,
 }: {
   render: string;
   accent: string;
   name: string;
+  imageUrl?: string | null;
 }) {
   const [view, setView] = useState<View>("studio");
 
@@ -37,8 +40,20 @@ export function ProductGallery({
             className="absolute inset-0"
           >
             {view === "studio" && (
-              <div className="h-full w-full bg-gradient-to-b from-surface-2 to-surface-3/50">
-                <ProductVisual render={render} accent={accent} className="h-full w-full p-6 sm:p-10" />
+              <div className="relative h-full w-full bg-gradient-to-b from-surface-2 to-surface-3/50">
+                {imageUrl ? (
+                  <Image
+                    src={imageUrl}
+                    alt={name}
+                    fill
+                    // unoptimized matches the admin preview: uploads may be SVG,
+                    // which the image optimizer rejects without dangerouslyAllowSVG
+                    unoptimized
+                    className="object-contain p-6 sm:p-10"
+                  />
+                ) : (
+                  <ProductVisual render={render} accent={accent} className="h-full w-full p-6 sm:p-10" />
+                )}
               </div>
             )}
 

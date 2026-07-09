@@ -150,12 +150,6 @@ function LoginForm() {
         </Button>
       </form>
 
-      <div className="mt-6 rounded-2xl border border-dashed border-line-2 bg-surface p-4 text-xs leading-relaxed text-muted">
-        <p className="font-semibold text-ink-2">Llogari demo për testim:</p>
-        <p className="mt-1">Admin — admin@klimaeng.com / Admin123!</p>
-        <p>Klient — demo@klimaeng.com / Demo123!</p>
-      </div>
-
       <p className="mt-6 text-center text-sm text-ink-2">
         S’keni llogari?{" "}
         <Link

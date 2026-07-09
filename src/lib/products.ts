@@ -47,6 +47,7 @@ export function toSnapshot(p: Product): ProductSnapshot {
     oldPrice: p.oldPrice,
     render: p.render,
     accent: p.accent,
+    imageUrl: p.imageUrl,
     category: p.category,
     btu: p.btu,
     energyCool: p.energyCool,

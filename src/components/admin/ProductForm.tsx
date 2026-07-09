@@ -54,8 +54,22 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
       const body = new FormData();
       body.append("file", file);
       const res = await fetch("/api/upload", { method: "POST", body });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Ngarkimi dështoi");
+
+      // Never assume JSON: an infrastructure error (413, timeout, crash)
+      // can return an empty or HTML body — surface the real cause instead
+      // of a JSON parse error.
+      const raw = await res.text();
+      let data: { url?: string; error?: string } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(
+          `Serveri u përgjigj me gabim (HTTP ${res.status}). Provoni një imazh më të vogël ose përsëri më vonë.`
+        );
+      }
+      if (!res.ok || !data.url) {
+        throw new Error(data.error ?? `Ngarkimi dështoi (HTTP ${res.status}).`);
+      }
       setImageUrl(data.url);
       toast("Imazhi u ngarkua");
     } catch (e) {
