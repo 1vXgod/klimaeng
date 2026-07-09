@@ -17,7 +17,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://klima-eng.vercel.app"),
+  metadataBase: new URL("https://klimaeng.vercel.app"),
   title: {
     default: "KlimaENG — Klimatizim & Ngrohje Premium në Prishtinë",
     template: "%s — KlimaENG",

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-const BASE = "https://klima-eng.vercel.app";
+const BASE = "https://klimaeng.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const products = await prisma.product.findMany({

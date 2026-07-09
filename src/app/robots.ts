@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/llogaria", "/api", "/porosia"],
     },
-    sitemap: "https://klima-eng.vercel.app/sitemap.xml",
+    sitemap: "https://klimaeng.vercel.app/sitemap.xml",
   };
 }
