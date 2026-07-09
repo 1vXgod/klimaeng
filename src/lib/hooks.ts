@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
+import type { DiscountInfo } from "@/lib/utils";
 
 const emptySubscribe = () => () => {};
 
@@ -29,6 +30,33 @@ export function useIsDark() {
     () => document.documentElement.classList.contains("dark"),
     () => false
   );
+}
+
+/**
+ * Ticks a server-computed discount window down to zero, then flips it off —
+ * lets a live product page auto-expire a discount without a reload. Starts
+ * from the server-rendered `discount` value (hydration-safe) and only ticks
+ * while a timer-driven discount is actually active.
+ */
+export function useLiveDiscount(discount: DiscountInfo) {
+  const [live, setLive] = useState(discount);
+
+  useEffect(() => {
+    if (!discount.active || !discount.endsAt) return;
+    const deadline = new Date(discount.endsAt).getTime();
+    const tick = () => {
+      const remainingMs = deadline - Date.now();
+      setLive(
+        remainingMs > 0
+          ? { active: true, endsAt: discount.endsAt, remainingMs }
+          : { active: false, endsAt: null, remainingMs: null }
+      );
+    };
+    const id = setInterval(tick, 30_000);
+    return () => clearInterval(id);
+  }, [discount.active, discount.endsAt]);
+
+  return live;
 }
 
 export function useScrolled(threshold = 8) {

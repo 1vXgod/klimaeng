@@ -35,6 +35,21 @@ export type ProductFormData = Omit<ProductInput, "features"> & {
   features: string[];
 };
 
+/** Formats an ISO date as the local "YYYY-MM-DDTHH:mm" value `<input type="datetime-local">` expects. */
+function toDatetimeLocalValue(iso?: string | null) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Default discount window when the timer is first enabled: now → +2 weeks. */
+function defaultDiscountWindow() {
+  const start = new Date();
+  const end = new Date(start.getTime() + 14 * 24 * 60 * 60 * 1000);
+  return { start: toDatetimeLocalValue(start.toISOString()), end: toDatetimeLocalValue(end.toISOString()) };
+}
+
 export function ProductForm({ initial }: { initial?: ProductFormData }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -44,6 +59,9 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
   const [inverter, setInverter] = useState(initial?.inverter ?? true);
   const [featured, setFeatured] = useState(initial?.featured ?? false);
   const [imageUrl, setImageUrl] = useState<string | null>(initial?.imageUrl ?? null);
+  const [discountEnabled, setDiscountEnabled] = useState(initial?.discountEnabled ?? false);
+  const [discountStart, setDiscountStart] = useState(() => toDatetimeLocalValue(initial?.discountStart));
+  const [discountEnd, setDiscountEnd] = useState(() => toDatetimeLocalValue(initial?.discountEnd));
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -125,6 +143,9 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
           .map((f) => f.trim())
           .filter(Boolean),
         imageUrl,
+        discountEnabled,
+        discountStart: discountEnabled && discountStart ? new Date(discountStart).toISOString() : null,
+        discountEnd: discountEnabled && discountEnd ? new Date(discountEnd).toISOString() : null,
       });
       if (result.ok) {
         toast(initial?.id ? "Produkti u përditësua" : "Produkti u krijua");
@@ -205,6 +226,41 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
             <Field label="Etiketa" hint="p.sh. I ri, Premium, Ofertë">
               <Input name="badge" defaultValue={initial?.badge ?? ""} />
             </Field>
+          </div>
+
+          <div className="mt-5 border-t border-line pt-5">
+            <SwitchRow
+              label="Aktivizo kohëmatësin e zbritjes"
+              checked={discountEnabled}
+              onChange={(v) => {
+                setDiscountEnabled(v);
+                if (v && !discountStart && !discountEnd) {
+                  const def = defaultDiscountWindow();
+                  setDiscountStart(def.start);
+                  setDiscountEnd(def.end);
+                }
+              }}
+            />
+            {discountEnabled && (
+              <div className="mt-3 grid gap-4 sm:grid-cols-2">
+                <Field label="Zbritja fillon *">
+                  <Input
+                    type="datetime-local"
+                    required
+                    value={discountStart}
+                    onChange={(e) => setDiscountStart(e.target.value)}
+                  />
+                </Field>
+                <Field label="Zbritja mbaron *" hint="Çmimi kthehet automatikisht në normal pas kësaj date">
+                  <Input
+                    type="datetime-local"
+                    required
+                    value={discountEnd}
+                    onChange={(e) => setDiscountEnd(e.target.value)}
+                  />
+                </Field>
+              </div>
+            )}
           </div>
         </section>
 

@@ -1,15 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Heart, Scale, ShoppingBag, Wifi } from "lucide-react";
+import { Heart, Scale, ShoppingBag, Timer, Wifi } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductVisual } from "@/components/renders/ProductRender";
 import { Badge } from "@/components/ui/Badge";
 import { EnergyBadge } from "@/components/ui/EnergyBadge";
 import { toast } from "@/components/ui/Toast";
-import { useMounted } from "@/lib/hooks";
-import { cn, discountPercent, formatEur } from "@/lib/utils";
+import { useLiveDiscount, useMounted } from "@/lib/hooks";
+import { cn, discountPercent, formatEur, formatRemaining, type DiscountInfo } from "@/lib/utils";
 import { MAX_COMPARE, useCart, useCompare, useWishlist, type ProductSnapshot } from "@/stores/shop";
 
 export type ProductCardData = ProductSnapshot & {
@@ -19,6 +19,7 @@ export type ProductCardData = ProductSnapshot & {
   wifi?: boolean;
   badge?: string | null;
   stock?: number;
+  discount: DiscountInfo;
 };
 
 export function ProductCard({
@@ -33,7 +34,8 @@ export function ProductCard({
   const wishlist = useWishlist();
   const compare = useCompare();
 
-  const discount = discountPercent(product.price, product.oldPrice);
+  const liveDiscount = useLiveDiscount(product.discount);
+  const discount = liveDiscount.active ? discountPercent(product.price, product.oldPrice) : null;
   const inWishlist = mounted && wishlist.has(product.id);
   const inCompare = mounted && compare.has(product.id);
   const soldOut = product.stock !== undefined && product.stock <= 0;
@@ -174,9 +176,16 @@ export function ProductCard({
           </div>
         )}
 
+        {liveDiscount.active && liveDiscount.remainingMs !== null && (
+          <p className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-flame-600 dark:text-flame-300">
+            <Timer size={12} className="shrink-0" />
+            Zbritja mbaron pas {formatRemaining(liveDiscount.remainingMs)}
+          </p>
+        )}
+
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-4">
           <div>
-            {product.oldPrice && (
+            {liveDiscount.active && product.oldPrice && (
               <span className="block text-xs text-muted line-through">
                 {formatEur(product.oldPrice)}
               </span>

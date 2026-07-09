@@ -8,18 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
+  id            String               @id @default(cuid())
   name          String
-  email         String         @unique
+  email         String               @unique
   passwordHash  String
-  role          String         @default("CUSTOMER")
+  role          String               @default("CUSTOMER")
   phone         String?
   image         String?
-  language      String         @default("sq")
-  theme         String         @default("light")
+  language      String               @default("sq")
+  theme         String               @default("light")
   emailVerified DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
   activities    ActivityLog[]
   addresses     Address[]
   notifications Notification[]
@@ -65,37 +65,40 @@ model Address {
 }
 
 model Product {
-  id            String      @id @default(cuid())
-  slug          String      @unique
-  name          String
-  brand         String
-  category      String
-  price         Int
-  oldPrice      Int?
-  shortDesc     String
-  description   String
-  btu           Int?
-  coverageM2    Int?
-  energyCool    String?
-  energyHeat    String?
-  seer          Float?
-  scop          Float?
-  refrigerant   String?
-  noiseDb       Int?
-  wifi          Boolean     @default(false)
-  inverter      Boolean     @default(false)
-  warrantyYears Int         @default(2)
-  stock         Int         @default(0)
-  featured      Boolean     @default(false)
-  badge         String?
-  render        String      @default("wall")
-  accent        String      @default("blue")
-  features      String      @default("[]")
-  imageUrl      String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  orderItems    OrderItem[]
-  reviews       Review[]
+  id              String      @id @default(cuid())
+  slug            String      @unique
+  name            String
+  brand           String
+  category        String
+  price           Int
+  oldPrice        Int?
+  shortDesc       String
+  description     String
+  btu             Int?
+  coverageM2      Int?
+  energyCool      String?
+  energyHeat      String?
+  seer            Float?
+  scop            Float?
+  refrigerant     String?
+  noiseDb         Int?
+  wifi            Boolean     @default(false)
+  inverter        Boolean     @default(false)
+  warrantyYears   Int         @default(2)
+  stock           Int         @default(0)
+  featured        Boolean     @default(false)
+  badge           String?
+  render          String      @default("wall")
+  accent          String      @default("blue")
+  features        String      @default("[]")
+  imageUrl        String?
+  discountEnabled Boolean     @default(false)
+  discountStart   DateTime?
+  discountEnd     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
+  reviews         Review[]
 }
 
 model Review {

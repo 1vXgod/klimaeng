@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { Reveal } from "@/components/ui/Reveal";
 import { getProductBySlug, getSimilarProducts, toSnapshot } from "@/lib/products";
-import { CATEGORY_LABELS, parseFeatures } from "@/lib/utils";
+import { CATEGORY_LABELS, getDiscountInfo, parseFeatures } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -89,6 +89,7 @@ export default async function ProductPage({
                 stock: product.stock,
                 warrantyYears: product.warrantyYears,
                 badge: product.badge,
+                discount: getDiscountInfo(product),
               }}
             />
           </Reveal>
@@ -180,6 +181,7 @@ export default async function ProductPage({
                     wifi: p.wifi,
                     badge: p.badge,
                     stock: p.stock,
+                    discount: getDiscountInfo(p),
                   }}
                 />
               ))}

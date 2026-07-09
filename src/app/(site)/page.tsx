@@ -11,6 +11,7 @@ import { TrustedBrands } from "@/components/home/TrustedBrands";
 import { WhyKlimaENG } from "@/components/home/WhyKlimaENG";
 import { prisma } from "@/lib/prisma";
 import { getFeaturedProducts, toSnapshot } from "@/lib/products";
+import { getDiscountInfo } from "@/lib/utils";
 
 export const revalidate = 300;
 
@@ -38,6 +39,7 @@ export default async function HomePage() {
           wifi: p.wifi,
           badge: p.badge,
           stock: p.stock,
+          discount: getDiscountInfo(p),
         }))}
       />
       <WhyKlimaENG />

@@ -42,7 +42,7 @@ export function ProductExplorer({
     let list = [...products];
     if (category !== "ALL") list = list.filter((p) => p.category === category);
     if (onlyWifi) list = list.filter((p) => p.wifi);
-    if (onlyDiscount) list = list.filter((p) => p.oldPrice && p.oldPrice > p.price);
+    if (onlyDiscount) list = list.filter((p) => p.discount.active);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(
@@ -59,13 +59,12 @@ export function ProductExplorer({
       case "price-desc":
         list.sort((a, b) => b.price - a.price);
         break;
-      case "discount":
-        list.sort(
-          (a, b) =>
-            ((b.oldPrice ?? b.price) - b.price) / (b.oldPrice ?? b.price) -
-            ((a.oldPrice ?? a.price) - a.price) / (a.oldPrice ?? a.price)
-        );
+      case "discount": {
+        const ratio = (p: ExplorerProduct) =>
+          p.discount.active ? ((p.oldPrice ?? p.price) - p.price) / (p.oldPrice ?? p.price) : 0;
+        list.sort((a, b) => ratio(b) - ratio(a));
         break;
+      }
       default:
         list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }

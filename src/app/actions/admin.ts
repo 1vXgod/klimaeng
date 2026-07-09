@@ -39,6 +39,9 @@ export type ProductInput = {
   accent: string;
   features: string[];
   imageUrl?: string | null;
+  discountEnabled: boolean;
+  discountStart?: string | null;
+  discountEnd?: string | null;
 };
 
 function slugify(name: string) {
@@ -60,6 +63,21 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
     return { ok: false, error: "Çmimi duhet të jetë më i madh se 0." };
   if (input.oldPrice && input.oldPrice <= input.price)
     return { ok: false, error: "Çmimi i vjetër duhet të jetë më i lartë se çmimi aktual." };
+
+  let discountStart: Date | null = null;
+  let discountEnd: Date | null = null;
+  if (input.discountEnabled) {
+    if (!input.oldPrice)
+      return { ok: false, error: "Vendosni çmimin e vjetër për të aktivizuar kohëmatësin e zbritjes." };
+    if (!input.discountStart || !input.discountEnd)
+      return { ok: false, error: "Zgjidhni datën e fillimit dhe të mbarimit të zbritjes." };
+    discountStart = new Date(input.discountStart);
+    discountEnd = new Date(input.discountEnd);
+    if (Number.isNaN(discountStart.getTime()) || Number.isNaN(discountEnd.getTime()))
+      return { ok: false, error: "Data e zbritjes është e pavlefshme." };
+    if (discountEnd <= discountStart)
+      return { ok: false, error: "Data e mbarimit duhet të jetë pas datës së fillimit." };
+  }
 
   const data = {
     name: input.name.trim(),
@@ -87,6 +105,9 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
     accent: input.accent,
     features: JSON.stringify(input.features.filter((f) => f.trim().length > 0)),
     imageUrl: input.imageUrl || null,
+    discountEnabled: !!input.discountEnabled,
+    discountStart,
+    discountEnd,
   };
 
   let id = input.id;

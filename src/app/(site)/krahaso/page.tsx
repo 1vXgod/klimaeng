@@ -9,7 +9,7 @@ import { EnergyBadge } from "@/components/ui/EnergyBadge";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { toast } from "@/components/ui/Toast";
 import { useMounted } from "@/lib/hooks";
-import { CATEGORY_LABELS, formatEur } from "@/lib/utils";
+import { CATEGORY_LABELS, formatEur, getDiscountInfo } from "@/lib/utils";
 import { useCart, useCompare } from "@/stores/shop";
 
 type FullProduct = {
@@ -34,6 +34,9 @@ type FullProduct = {
   warrantyYears: number;
   refrigerant: string | null;
   stock: number;
+  discountEnabled: boolean;
+  discountStart: string | null;
+  discountEnd: string | null;
 };
 
 export default function ComparePage() {
@@ -61,7 +64,7 @@ export default function ComparePage() {
     { label: "Çmimi", render: (p) => (
       <div>
         <span className="font-display text-lg font-bold text-ink">{formatEur(p.price)}</span>
-        {p.oldPrice && (
+        {getDiscountInfo(p).active && p.oldPrice && (
           <span className="ml-2 text-xs text-muted line-through">{formatEur(p.oldPrice)}</span>
         )}
       </div>

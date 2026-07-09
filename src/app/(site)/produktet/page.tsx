@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { PageHero } from "@/components/layout/PageHero";
 import { ProductExplorer } from "@/components/products/ProductExplorer";
 import { getAllProducts, toSnapshot } from "@/lib/products";
+import { getDiscountInfo } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Katalogu i Produkteve",
@@ -40,6 +41,7 @@ export default async function ProductsPage({
             badge: p.badge,
             stock: p.stock,
             createdAt: p.createdAt.toISOString(),
+            discount: getDiscountInfo(p),
           }))}
         />
       </div>

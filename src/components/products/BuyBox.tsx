@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, Heart, Minus, Plus, Scale, ShieldCheck, ShoppingBag, Truck, Wrench } from "lucide-react";
+import { Check, Heart, Minus, Plus, Scale, ShieldCheck, ShoppingBag, Timer, Truck, Wrench } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { EnergyBadge } from "@/components/ui/EnergyBadge";
 import { toast } from "@/components/ui/Toast";
-import { useMounted } from "@/lib/hooks";
-import { cn, discountPercent, formatEur } from "@/lib/utils";
+import { useLiveDiscount, useMounted } from "@/lib/hooks";
+import { cn, discountPercent, formatEur, formatRemaining, type DiscountInfo } from "@/lib/utils";
 import { MAX_COMPARE, useCart, useCompare, useWishlist, type ProductSnapshot } from "@/stores/shop";
 
 export type BuyBoxProduct = ProductSnapshot & {
@@ -14,6 +14,7 @@ export type BuyBoxProduct = ProductSnapshot & {
   stock: number;
   warrantyYears: number;
   badge?: string | null;
+  discount: DiscountInfo;
 };
 
 export function BuyBox({ product }: { product: BuyBoxProduct }) {
@@ -23,7 +24,8 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
   const wishlist = useWishlist();
   const compare = useCompare();
 
-  const discount = discountPercent(product.price, product.oldPrice);
+  const liveDiscount = useLiveDiscount(product.discount);
+  const discount = liveDiscount.active ? discountPercent(product.price, product.oldPrice) : null;
   const inWishlist = mounted && wishlist.has(product.id);
   const inCompare = mounted && compare.has(product.id);
   const lowStock = product.stock > 0 && product.stock <= 5;
@@ -60,13 +62,19 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
         <span className="font-display text-4xl font-extrabold text-ink">
           {formatEur(product.price)}
         </span>
-        {product.oldPrice && (
+        {liveDiscount.active && product.oldPrice && (
           <span className="mb-1 text-lg font-medium text-muted line-through">
             {formatEur(product.oldPrice)}
           </span>
         )}
       </div>
       <p className="mt-1 text-xs text-muted">Përfshirë TVSH-në · Pa kosto të fshehura</p>
+      {liveDiscount.active && liveDiscount.remainingMs !== null && (
+        <p className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-flame-200 bg-flame-50 px-3 py-1 text-xs font-semibold text-flame-600 dark:border-flame-500/25 dark:bg-flame-500/10 dark:text-flame-300">
+          <Timer size={13} className="shrink-0" />
+          Zbritja mbaron pas {formatRemaining(liveDiscount.remainingMs)}
+        </p>
+      )}
 
       {/* availability */}
       <div className="mt-4 flex items-center gap-2 text-sm font-semibold" aria-live="polite">

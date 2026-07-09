@@ -71,6 +71,51 @@ export function discountPercent(price: number, oldPrice?: number | null) {
   return Math.round(((oldPrice - price) / oldPrice) * 100);
 }
 
+export type DiscountInput = {
+  price: number;
+  oldPrice?: number | null;
+  discountEnabled?: boolean;
+  discountStart?: Date | string | null;
+  discountEnd?: Date | string | null;
+};
+
+export type DiscountInfo = {
+  active: boolean;
+  /** ISO end date, only set when a timer is actually driving the discount. */
+  endsAt: string | null;
+  remainingMs: number | null;
+};
+
+/**
+ * Whether a product's discount (old-price strike-through + badge) should be
+ * shown right now. Without the timer enabled, any oldPrice > price counts as
+ * an active discount (legacy behavior, no expiry). With the timer enabled,
+ * the discount is only active inside [discountStart, discountEnd] — outside
+ * that window it silently reverts to the normal price.
+ */
+export function getDiscountInfo(p: DiscountInput, now: number = Date.now()): DiscountInfo {
+  const inactive: DiscountInfo = { active: false, endsAt: null, remainingMs: null };
+  if (!p.oldPrice || p.oldPrice <= p.price) return inactive;
+  if (!p.discountEnabled) return { active: true, endsAt: null, remainingMs: null };
+  if (!p.discountStart || !p.discountEnd) return inactive;
+
+  const start = new Date(p.discountStart).getTime();
+  const end = new Date(p.discountEnd).getTime();
+  if (now < start || now > end) return inactive;
+  return { active: true, endsAt: new Date(end).toISOString(), remainingMs: end - now };
+}
+
+/** "12 ditë, 5 orë" style remaining-time label for a discount timer. */
+export function formatRemaining(ms: number): string {
+  const totalMinutes = Math.max(1, Math.round(ms / 60000));
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+  if (days > 0) return `${days} ditë, ${hours} orë`;
+  if (hours > 0) return `${hours} orë, ${minutes} min`;
+  return `${minutes} min`;
+}
+
 /** Rough BTU sizing used by the AI assistant and capacity calculator. */
 export function recommendBtu(areaM2: number, opts?: { sunny?: boolean; highCeiling?: boolean }) {
   let btu = areaM2 * 340;

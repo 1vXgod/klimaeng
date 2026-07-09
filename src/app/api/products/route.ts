@@ -26,6 +26,9 @@ export async function GET() {
       warrantyYears: true,
       refrigerant: true,
       stock: true,
+      discountEnabled: true,
+      discountStart: true,
+      discountEnd: true,
     },
     orderBy: { price: "asc" },
   });

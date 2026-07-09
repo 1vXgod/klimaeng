@@ -47,6 +47,9 @@ export default async function EditProductPage({
           accent: product.accent,
           features: parseFeatures(product.features),
           imageUrl: product.imageUrl,
+          discountEnabled: product.discountEnabled,
+          discountStart: product.discountStart?.toISOString() ?? null,
+          discountEnd: product.discountEnd?.toISOString() ?? null,
         }}
       />
     </div>
