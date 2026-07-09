@@ -250,7 +250,7 @@ export function Navbar() {
               href="/lista-e-deshirave"
               aria-label="Lista e dëshirave"
               className={cn(
-                "relative rounded-full p-2.5 transition-colors focus-ring",
+                "relative rounded-full p-2 transition-colors focus-ring sm:p-2.5",
                 onHero
                   ? "text-slate-300 hover:bg-white/10 hover:text-white"
                   : "text-ink-2 hover:bg-surface-2 hover:text-ink"
@@ -263,7 +263,7 @@ export function Navbar() {
               onClick={openCart}
               aria-label="Shporta"
               className={cn(
-                "relative rounded-full p-2.5 transition-colors focus-ring",
+                "relative rounded-full p-2 transition-colors focus-ring sm:p-2.5",
                 onHero
                   ? "text-slate-300 hover:bg-white/10 hover:text-white"
                   : "text-ink-2 hover:bg-surface-2 hover:text-ink"
@@ -287,7 +287,7 @@ export function Navbar() {
               onClick={() => setMobileOpen(true)}
               aria-label="Hap menynë"
               className={cn(
-                "rounded-full p-2.5 transition-colors focus-ring lg:hidden",
+                "rounded-full p-2 transition-colors focus-ring sm:p-2.5 lg:hidden",
                 onHero ? "text-white hover:bg-white/10" : "text-ink hover:bg-surface-2"
               )}
             >

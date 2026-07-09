@@ -137,7 +137,7 @@ export function AdminShell({
         <Link href="/admin" className="flex items-center gap-2.5 px-6 py-5 focus-ring">
           <LogoMark size={30} />
           <span className="font-display text-[15px] font-bold text-white">
-            Klima<span className="text-frost-300">ENG</span>
+            <span className="text-[#5cc0de]">Klima</span>ENG
             <span className="ml-2 rounded-md bg-white/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-slate-300">
               ADMIN
             </span>
@@ -169,7 +169,7 @@ export function AdminShell({
                 <span className="flex items-center gap-2.5">
                   <LogoMark size={30} />
                   <span className="font-display text-[15px] font-bold text-white">
-                    Klima<span className="text-frost-300">ENG</span>
+                    <span className="text-[#5cc0de]">Klima</span>ENG
                   </span>
                 </span>
                 <button

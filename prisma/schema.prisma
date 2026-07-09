@@ -8,17 +8,18 @@ datasource db {
 }
 
 model User {
-  id            String               @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String
-  email         String               @unique
+  email         String         @unique
   passwordHash  String
-  role          String               @default("CUSTOMER")
+  role          String         @default("CUSTOMER")
   phone         String?
   image         String?
-  language      String               @default("sq")
-  theme         String               @default("light")
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  language      String         @default("sq")
+  theme         String         @default("light")
+  emailVerified DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   activities    ActivityLog[]
   addresses     Address[]
   notifications Notification[]
@@ -26,6 +27,8 @@ model User {
   resetTokens   PasswordResetToken[]
 }
 
+/// Legacy reset-link tokens — superseded by VerificationCode; kept so the
+/// (empty) table is not dropped from the production database.
 model PasswordResetToken {
   id        String   @id @default(cuid())
   token     String   @unique
@@ -33,6 +36,19 @@ model PasswordResetToken {
   expiresAt DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Short-lived 6-digit codes for email verification and password resets.
+model VerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  purpose   String // VERIFY_EMAIL | RESET_PASSWORD
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email, purpose])
 }
 
 model Address {

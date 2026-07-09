@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useState, useTransition } from "react";
-import { registerUser } from "@/app/actions/auth";
+import { registerUser, resendVerificationCode, verifyEmail } from "@/app/actions/auth";
+import { CodeStep } from "@/components/auth/CodeStep";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Field";
 
@@ -14,10 +15,13 @@ export default function RegisterPage() {
   const [isPending, startTransition] = useTransition();
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<"form" | "code">("form");
+  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null);
+  const [demoCode, setDemoCode] = useState<string | null>(null);
 
-  const submit = (formData: FormData) => {
+  const submitForm = (formData: FormData) => {
     setError(null);
-    const email = String(formData.get("email") ?? "");
+    const email = String(formData.get("email") ?? "").trim().toLowerCase();
     const password = String(formData.get("password") ?? "");
 
     startTransition(async () => {
@@ -31,26 +35,59 @@ export default function RegisterPage() {
         setError(result.error);
         return;
       }
-      await signIn("credentials", { email, password, redirect: false });
+      setCredentials({ email, password });
+      setDemoCode(result.demoCode ?? null);
+      setStep("code");
+    });
+  };
+
+  const submitCode = (code: string) => {
+    if (!credentials) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await verifyEmail({ email: credentials.email, code });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      await signIn("credentials", { ...credentials, redirect: false });
       router.push("/llogaria");
       router.refresh();
     });
   };
 
+  if (step === "code" && credentials) {
+    return (
+      <CodeStep
+        email={credentials.email}
+        title="Verifikoni email-in tuaj"
+        submitLabel="Verifiko dhe kyçu"
+        busy={isPending}
+        error={error}
+        demoCode={demoCode}
+        onSubmit={submitCode}
+        onResend={async () => {
+          const result = await resendVerificationCode(credentials.email);
+          if (result.ok && result.demoCode) setDemoCode(result.demoCode);
+        }}
+      />
+    );
+  }
+
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink">
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
         Krijoni llogarinë tuaj
       </h1>
       <p className="mt-2 text-sm text-ink-2">
         Ndiqni porositë, ruani produktet e preferuara dhe merrni oferta ekskluzive.
       </p>
 
-      <form action={submit} className="mt-8 space-y-4">
+      <form action={submitForm} className="mt-8 space-y-4">
         <Field label="Emri i plotë">
           <Input name="name" required minLength={3} placeholder="p.sh. Arta Krasniqi" autoComplete="name" />
         </Field>
-        <Field label="Email">
+        <Field label="Email" hint="Do t'ju dërgojmë një kod verifikimi në këtë adresë.">
           <Input name="email" type="email" required placeholder="ju@email.com" autoComplete="email" />
         </Field>
         <Field label="Telefoni (opsionale)">

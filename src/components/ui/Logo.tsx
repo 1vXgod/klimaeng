@@ -1,38 +1,41 @@
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
+/**
+ * Official KlimaENG brand assets (client-provided files in /public/brand):
+ *  - mark.png  — teal circle with three white waves (works on any background)
+ *  - logo.png  — full wordmark incl. ® (designed for light backgrounds)
+ * On dark surfaces (and in dark theme) the wordmark is composed from the
+ * mark + light text, since the file's navy "ENG" would be illegible there.
+ */
 export function LogoMark({ className, size = 34 }: { className?: string; size?: number }) {
   return (
-    <svg
+    <Image
+      src="/brand/mark.png"
+      alt=""
+      aria-hidden
       width={size}
       height={size}
-      viewBox="0 0 40 40"
-      fill="none"
-      className={cn("shrink-0", className)}
-      aria-hidden
-    >
-      <defs>
-        <linearGradient id="klimaeng-mark" x1="4" y1="4" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#3d74f0" />
-          <stop offset="1" stopColor="#0eaacd" />
-        </linearGradient>
-      </defs>
-      <rect x="1.5" y="1.5" width="37" height="37" rx="11" fill="url(#klimaeng-mark)" />
-      {/* stylized snowflake / fan hybrid */}
-      <g stroke="#fff" strokeWidth="2.4" strokeLinecap="round">
-        <path d="M20 9.5v21" />
-        <path d="M10.9 14.75l18.2 10.5" />
-        <path d="M10.9 25.25l18.2-10.5" />
-      </g>
-      <g stroke="#fff" strokeWidth="1.8" strokeLinecap="round" opacity="0.85">
-        <path d="M20 9.5l-2.6 3M20 9.5l2.6 3" />
-        <path d="M20 30.5l-2.6-3M20 30.5l2.6-3" />
-        <path d="M10.9 14.75l3.9-0.6M10.9 14.75l0.5 3.9" />
-        <path d="M29.1 25.25l-3.9 0.6M29.1 25.25l-0.5-3.9" />
-        <path d="M10.9 25.25l0.5-3.9M10.9 25.25l3.9 0.6" />
-        <path d="M29.1 14.75l-0.5 3.9M29.1 14.75l-3.9-0.6" />
-      </g>
-      <circle cx="20" cy="20" r="3.4" fill="#fff" />
-    </svg>
+      className={cn("shrink-0 select-none", className)}
+      priority
+    />
+  );
+}
+
+function DarkWordmark({ className }: { className?: string }) {
+  return (
+    <span className={cn("items-center gap-2.5", className)}>
+      <LogoMark />
+      <span className="inline-flex items-start">
+        <span className="font-display text-[19px] leading-none font-bold tracking-tight">
+          <span className="text-[#5cc0de]">Klima</span>
+          <span className="text-white">ENG</span>
+        </span>
+        <span className="ml-0.5 text-[9px] leading-none font-semibold text-white/70" aria-hidden>
+          ®
+        </span>
+      </span>
+    </span>
   );
 }
 
@@ -43,20 +46,22 @@ export function Logo({
   className?: string;
   onDark?: boolean;
 }) {
+  if (onDark) {
+    return <DarkWordmark className={cn("inline-flex", className)} />;
+  }
+
+  // Light contexts: the official file; in dark theme swap to the composed variant.
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark />
-      <span
-        className={cn(
-          "font-display text-[19px] font-bold tracking-tight",
-          onDark ? "text-white" : "text-ink"
-        )}
-      >
-        Klima
-        <span className="bg-gradient-to-r from-brand-500 to-frost-500 bg-clip-text text-transparent">
-          ENG
-        </span>
-      </span>
+    <span className={cn("inline-flex items-center", className)}>
+      <Image
+        src="/brand/logo.png"
+        alt="KlimaENG"
+        width={140}
+        height={34}
+        className="h-[34px] w-auto select-none dark:hidden"
+        priority
+      />
+      <DarkWordmark className="hidden dark:inline-flex" />
     </span>
   );
 }

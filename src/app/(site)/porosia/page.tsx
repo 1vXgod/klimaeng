@@ -86,7 +86,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="container-site pt-28 pb-20 md:pt-36">
-      <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink">
+      <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
         Përfundo porosinë
       </h1>
       <p className="mt-2 max-w-xl text-ink-2">

@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
+import { receiptEmail } from "@/lib/email-templates";
+import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 
 export type OrderInput = {
@@ -113,6 +115,28 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
     }
     return created;
   });
+
+  // Receipt email — best-effort: a mail failure must never fail the order.
+  try {
+    const template = receiptEmail({
+      customerName: name,
+      orderNo: order.orderNo,
+      date: order.createdAt,
+      items: items.map(({ product, qty }) => ({
+        name: product.name,
+        code: product.slug,
+        qty,
+        price: product.price,
+      })),
+      total,
+      city,
+      street,
+      withInstallation: input.withInstallation,
+    });
+    await sendMail({ to: email, ...template });
+  } catch (e) {
+    console.error("[order] receipt email failed:", e);
+  }
 
   revalidatePath("/admin");
   revalidatePath("/llogaria/porosite");

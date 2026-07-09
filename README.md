@@ -56,12 +56,27 @@ NEXT_PUBLIC_3CX_CHAT_URL="https://instanca-juaj.3cx.eu"
 Çdo provajder tjetër shtohet me një komponent të vetëm në
 `src/components/chat/ChatWidget.tsx`.
 
+## Email-et (verifikimi, rivendosja, faturat)
+
+Aplikacioni dërgon tre lloje email-esh: kod verifikimi 6-shifror në regjistrim,
+kod për rivendosjen e fjalëkalimit, dhe faturë automatike pas çdo porosie
+(me produktet, kodet dhe numrin e porosisë).
+
+- **Pa konfigurim** punon në *modalitet demo*: kodet shfaqen direkt në ekran
+  dhe email-et logohen në konsolën e serverit — asgjë nuk humbet gjatë zhvillimit.
+- **Për dërgim real** mjafton një çelës [Resend](https://resend.com) në `.env`:
+
+```env
+RESEND_API_KEY="re_..."
+EMAIL_FROM="KlimaENG <info@klimaeng.com>"  # domain i verifikuar në Resend
+```
+
+Shabllonet janë te `src/lib/email-templates.ts`, dërguesi te `src/lib/mail.ts`.
+
 ## Shënime për prodhim
 
-- **Databaza:** SQLite është për zhvillim. Në Vercel kaloni te Postgres/Turso —
-  ndryshoni `datasource` në `prisma/schema.prisma` dhe `DATABASE_URL`.
-- **Email:** rivendosja e fjalëkalimit funksionon në modalitet demo (linku
-  shfaqet në ekran). Lidhni një SMTP/Resend për dërgim real.
+- **Databaza:** projekti tani punon me **Neon PostgreSQL** (`DATABASE_URL` në `.env`).
+  Skema lokale SQLite (`prisma/schema.sqlite.prisma`) ruhet vetëm si referencë e migrimit.
 - **Ngarkimi i imazheve:** `/api/upload` ruan në `public/uploads` — në
   serverless kjo është efemere; lidhni S3/Vercel Blob për prodhim (kontrata
   `POST → { url }` mbetet e njëjta).

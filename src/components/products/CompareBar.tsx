@@ -19,12 +19,13 @@ export function CompareBar() {
   return (
     <AnimatePresence>
       {visible && (
+        /* right offset + width cap keep the chat launcher reachable at every width */
         <motion.div
           initial={{ y: 90, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 90, opacity: 0 }}
           transition={{ type: "spring", stiffness: 320, damping: 30 }}
-          className="fixed inset-x-3 bottom-3 z-80 sm:inset-x-auto sm:left-1/2 sm:w-full sm:max-w-xl sm:-translate-x-1/2"
+          className="fixed bottom-3 left-3 right-[4.75rem] z-80 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[min(36rem,calc(100vw-11rem))] sm:-translate-x-1/2"
         >
           <div className="flex items-center gap-3 rounded-3xl border border-line bg-surface/95 p-3 backdrop-blur-lg card-shadow-lg">
             <div className="flex flex-1 items-center gap-2 overflow-x-auto no-scrollbar">

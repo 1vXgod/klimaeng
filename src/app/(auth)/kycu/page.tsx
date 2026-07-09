@@ -1,10 +1,11 @@
 "use client";
 
-import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
+import { CheckCircle2, Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getSession, signIn } from "next-auth/react";
 import { Suspense, useState } from "react";
+import { loginPrecheck } from "@/app/actions/auth";
 import { Button } from "@/components/ui/Button";
 import { Field, Input } from "@/components/ui/Field";
 
@@ -12,24 +13,33 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  const justVerified = searchParams.get("verifikuar") === "1";
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
+    setUnverifiedEmail(null);
     setLoading(true);
     const form = new FormData(e.currentTarget);
+    const email = String(form.get("email") ?? "");
 
     const result = await signIn("credentials", {
-      email: String(form.get("email") ?? ""),
+      email,
       password: String(form.get("password") ?? ""),
       redirect: false,
     });
 
     if (result?.error) {
-      setError("Email-i ose fjalëkalimi është i pasaktë.");
+      const { unverified } = await loginPrecheck(email);
+      if (unverified) {
+        setUnverifiedEmail(email.trim().toLowerCase());
+      } else {
+        setError("Email-i ose fjalëkalimi është i pasaktë.");
+      }
       setLoading(false);
       return;
     }
@@ -43,12 +53,19 @@ function LoginForm() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink">
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
         Mirë se u kthyet
       </h1>
       <p className="mt-2 text-sm text-ink-2">
         Kyçuni për të ndjekur porositë, dëshirat dhe cilësimet tuaja.
       </p>
+
+      {justVerified && (
+        <p className="mt-5 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
+          <CheckCircle2 size={16} className="shrink-0" />
+          Email-i u verifikua me sukses — tani mund të kyçeni.
+        </p>
+      )}
 
       <form onSubmit={submit} className="mt-8 space-y-4">
         <Field label="Email">
@@ -103,6 +120,21 @@ function LoginForm() {
           <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-medium text-red-600 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400">
             {error}
           </p>
+        )}
+
+        {unverifiedEmail && (
+          <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+            <p className="font-semibold">Llogaria juaj s’është verifikuar ende.</p>
+            <p className="mt-0.5">
+              Duhet të konfirmoni email-in para se të kyçeni.{" "}
+              <Link
+                href={`/verifiko-emailin?email=${encodeURIComponent(unverifiedEmail)}&send=1`}
+                className="font-bold underline underline-offset-2"
+              >
+                Dërgo kodin e verifikimit →
+              </Link>
+            </p>
+          </div>
         )}
 
         <Button type="submit" size="lg" className="w-full" disabled={loading}>

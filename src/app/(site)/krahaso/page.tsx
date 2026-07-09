@@ -90,7 +90,7 @@ export default function ComparePage() {
     <div className="container-site pt-28 pb-20 md:pt-36">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl font-extrabold tracking-tight text-ink">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
             Krahaso produktet
           </h1>
           <p className="mt-2 text-ink-2">

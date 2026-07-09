@@ -37,6 +37,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) return null;
 
+        // Accounts must confirm their email before signing in; the login page
+        // uses loginPrecheck() to show a "verify your email" hint for this case.
+        if (!user.emailVerified) return null;
+
         return {
           id: user.id,
           name: user.name,

@@ -101,7 +101,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 26 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.75, delay: 0.08, ease }}
-              className="mt-6 font-display text-[2.6rem] leading-[1.06] font-extrabold tracking-tight text-balance sm:text-6xl lg:text-[4.2rem]"
+              className="mt-6 font-display text-4xl leading-[1.08] font-extrabold tracking-tight text-balance sm:text-6xl sm:leading-[1.06] lg:text-[4.2rem]"
             >
               Temperatura e duhur,
               <br />
@@ -161,7 +161,7 @@ export function Hero() {
           </div>
 
           {/* ------ product visual ------ */}
-          <div className="relative z-10 mx-auto w-full max-w-xl lg:max-w-none">
+          <div className="relative z-10 mx-auto mb-8 w-full max-w-xl lg:mb-0 lg:max-w-none">
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}

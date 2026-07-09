@@ -86,7 +86,7 @@ export function EnergySection({ products }: { products: ProductSnapshot[] }) {
                 <span>140 m²</span>
               </div>
 
-              <div className="mt-8 grid grid-cols-2 gap-4">
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-2xl bg-night-900/70 p-5">
                   <p className="text-xs font-medium tracking-wide text-slate-400 uppercase">
                     Kapaciteti i rekomanduar

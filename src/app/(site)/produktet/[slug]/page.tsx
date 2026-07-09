@@ -57,7 +57,7 @@ export default async function ProductPage({
     <div className="pt-24 pb-20 md:pt-32">
       <div className="container-site">
         {/* breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-7 flex items-center gap-1.5 text-[13px] text-muted">
+        <nav aria-label="Breadcrumb" className="mb-7 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-muted">
           <Link href="/" className="transition-colors hover:text-ink">Ballina</Link>
           <ChevronRight size={13} />
           <Link href="/produktet" className="transition-colors hover:text-ink">Produktet</Link>
