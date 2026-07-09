@@ -33,9 +33,9 @@ export function CtaSection() {
                 Na Kontaktoni
                 <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
               </Button>
-              <Button href="tel:+38344000000" variant="frost" size="lg" className="w-full sm:w-auto">
+              <Button href="tel:+38344111051" variant="frost" size="lg" className="w-full sm:w-auto">
                 <PhoneCall size={16} />
-                +383 44 000 000
+                044-111-051 / 049-111-051
               </Button>
             </div>
           </div>

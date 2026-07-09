@@ -106,7 +106,7 @@ export function askAssistant(
 
   if (/(servis|mirembajtje|pastrim|defekt)/.test(msg)) {
     return {
-      text: "Servisimi vjetor (pastrim kimik + kontroll gazi + diagnostikim) kushton 25–35€ dhe rezervohet me një telefonatë. Për defekte urgjente, linja 24/7: +383 44 000 000 — dalim edhe të dielave.",
+      text: "Servisimi vjetor (pastrim kimik + kontroll gazi + diagnostikim) kushton 25–35€ dhe rezervohet me një telefonatë. Për defekte urgjente, linja 24/7: 044-111-051 / 049-111-051 — dalim edhe të dielave.",
       chips: ["Garancia", "Çmimi i montimit"],
     };
   }
@@ -163,7 +163,7 @@ export function askAssistant(
 
   if (/(kontakt|telefon|adrese|ku ndodheni|orari)/.test(msg)) {
     return {
-      text: "Na gjeni në Rr. Nëna Terezë, Prishtinë. ☎ +383 44 000 000 · ✉ info@klimaeng.com · E Hënë–E Shtunë 08:00–18:00. Për urgjenca teknike jemi 24/7.",
+      text: "Na gjeni në Rr. Fahri Fazliu Nr-326, Kodra e Trimave, Prishtinë. ☎ 044-111-051 / 049-111-051 · ✉ avnibunjaku@hotmail.com · E Hënë–E Shtunë 08:00–18:00. Për urgjenca teknike jemi 24/7.",
       chips: ["Më rekomando një klimë", "Çmimi i montimit"],
     };
   }

@@ -53,7 +53,7 @@ async function issueCode(
     return {
       ok: false,
       error:
-        "Dërgimi i email-it dështoi. Provoni përsëri pas pak — nëse problemi vazhdon, na kontaktoni në info@klimaeng.com.",
+        "Dërgimi i email-it dështoi. Provoni përsëri pas pak — nëse problemi vazhdon, na kontaktoni në avnibunjaku@hotmail.com.",
     };
   }
   return { ok: true };

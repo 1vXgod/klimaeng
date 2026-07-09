@@ -8,27 +8,27 @@ import { Reveal } from "@/components/ui/Reveal";
 export const metadata: Metadata = {
   title: "Rreth Nesh",
   description:
-    "Nga tre teknikë dhe një furgon në 2016, te mbi 20 profesionistë dhe 1.200+ montime — historia e KlimaENG, kompanisë premium të klimatizimit në Prishtinë.",
+    "Nga tre teknikë dhe një furgon në 2000, te mbi 20 profesionistë dhe 1.200+ montime — historia e KlimaENG, kompanisë premium të klimatizimit në Prishtinë.",
 };
 
 const TIMELINE = [
   {
-    year: "2016",
+    year: "2000",
     title: "Fillimi modest",
     text: "Tre teknikë, një furgon i vjetër dhe një bindje: montimi cilësor nuk duhet të jetë luks. KlimaENG hap dyert në Prishtinë.",
   },
   {
-    year: "2018",
+    year: "2002",
     title: "Rritja e parë",
     text: "Bëhemi partner i autorizuar i Midea-s për Kosovën dhe kalojmë montimin e 200-të. Ekipi rritet në 8 profesionistë.",
   },
   {
-    year: "2021",
+    year: "2005",
     title: "Projektet komerciale",
     text: "Realizojmë projektin e parë të madh — 64 njësi në kompleksin “Arbëria Residence”. Hapet departamenti i sistemeve VRF dhe pompave termike.",
   },
   {
-    year: "2024",
+    year: "2008",
     title: "Standardi premium",
     text: "Mbi 20 profesionistë, 1.000+ montime dhe linja e parë e produkteve me markën KlimaENG. Nis programi i mirëmbajtjes me kontrata vjetore.",
   },
@@ -63,7 +63,7 @@ const VALUES = [
 ];
 
 const STATS = [
-  { value: 8, suffix: "+", label: "Vjet në treg" },
+  { value: 25, suffix: "+", label: "Vjet në treg" },
   { value: 1200, suffix: "+", label: "Montime të përfunduara" },
   { value: 20, suffix: "+", label: "Profesionistë në ekip" },
   { value: 98, suffix: "%", label: "Klientë të kënaqur" },

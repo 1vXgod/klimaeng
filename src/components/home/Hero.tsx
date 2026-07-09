@@ -22,7 +22,7 @@ const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
 }));
 
 const STATS = [
-  { value: 8, suffix: "+", label: "Vjet përvojë" },
+  { value: 25, suffix: "+", label: "Vjet përvojë" },
   { value: 1200, suffix: "+", label: "Sisteme të montuara" },
   { value: 950, suffix: "+", label: "Klientë të lumtur" },
   { value: 24, suffix: "/7", label: "Servis urgjent" },
@@ -93,7 +93,7 @@ export function Hero() {
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-frost-400" />
               </span>
               <span className="text-[13px] font-medium text-slate-200">
-                Që nga 2016 — Prishtinë, Kosovë
+                Që nga 2000 — Prishtinë, Kosovë
               </span>
             </motion.div>
 

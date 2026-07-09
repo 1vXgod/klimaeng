@@ -24,8 +24,8 @@ function layout(title: string, bodyHtml: string) {
         <tr><td style="padding:28px;">${bodyHtml}</td></tr>
         <tr>
           <td style="background:#f6f9fb;border-top:1px solid #e2e8f0;padding:18px 28px;font-size:12px;line-height:1.6;color:#68758d;">
-            KlimaENG &middot; Rr. N&euml;na Terez&euml;, Prishtin&euml;, Kosov&euml;<br>
-            +383 44 000 000 &middot; info@klimaeng.com<br>
+            KlimaENG &middot; Rr. Fahri Fazliu Nr-326, Kodra e Trimave, Prishtin&euml;, Kosov&euml;<br>
+            044-111-051 / 049-111-051 &middot; avnibunjaku@hotmail.com<br>
             <span style="color:#9aa7bd;">Ky email u d&euml;rgua automatikisht &mdash; ju lutemi mos u p&euml;rgjigjeni direkt.</span>
           </td>
         </tr>
@@ -173,8 +173,8 @@ export function receiptEmail(data: ReceiptData) {
        </div>
 
        <p style="margin:20px 0 0;font-size:13px;line-height:1.7;color:#68758d;">
-         Pyetje për porosinë? Na telefononi në <strong style="color:${NAVY};">+383 44 000 000</strong>
-         duke përmendur numrin <strong>${data.orderNo}</strong>.
+         Pyetje për porosinë? Na telefononi në <strong style="color:${NAVY};">044-111-051</strong> ose
+         <strong style="color:${NAVY};">049-111-051</strong> duke përmendur numrin <strong>${data.orderNo}</strong>.
        </p>`
     ),
     text: `Faleminderit, ${firstName}!
@@ -190,7 +190,7 @@ Adresa: ${data.street}, ${data.city}
 ${data.withInstallation ? "Me montim profesional — çmimi i montimit (40–60 €) konfirmohet me telefon." : "Pa montim — vetëm dërgesa."}
 Pagesa: me para në dorë ose me këste, pas ${data.withInstallation ? "montimit" : "dërgesës"}. Pa pagesë paraprake.
 
-Pyetje? +383 44 000 000 — përmendni numrin ${data.orderNo}.
-KlimaENG · Rr. Nëna Terezë, Prishtinë`,
+Pyetje? 044-111-051 / 049-111-051 — përmendni numrin ${data.orderNo}.
+KlimaENG · Rr. Fahri Fazliu Nr-326, Kodra e Trimave, Prishtinë`,
   };
 }

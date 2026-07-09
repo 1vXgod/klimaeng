@@ -3,33 +3,34 @@ import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact/ContactForm";
 import { PageHero } from "@/components/layout/PageHero";
 import { Reveal } from "@/components/ui/Reveal";
+import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
 
 export const metadata: Metadata = {
   title: "Kontakti",
   description:
-    "Na kontaktoni për ofertë falas: +383 44 000 000 · info@klimaeng.com · Rr. Nëna Terezë, Prishtinë. Përgjigjemi brenda 24 orëve.",
+    "Na kontaktoni për ofertë falas: 044-111-051 / 049-111-051 · avnibunjaku@hotmail.com · Rr. Fahri Fazliu Nr-326, Kodra e Trimave, Prishtinë. Përgjigjemi brenda 24 orëve.",
 };
 
 const CARDS = [
   {
     icon: <Phone size={19} />,
     title: "Telefoni",
-    lines: ["+383 44 000 000"],
-    href: "tel:+38344000000",
+    lines: ["044-111-051", "049-111-051"],
+    href: "tel:+38344111051",
     note: "Urgjenca teknike: 24/7",
   },
   {
     icon: <Mail size={19} />,
     title: "Email",
-    lines: ["info@klimaeng.com"],
-    href: "mailto:info@klimaeng.com",
+    lines: ["avnibunjaku@hotmail.com"],
+    href: "mailto:avnibunjaku@hotmail.com",
     note: "Përgjigje brenda 24 orëve",
   },
   {
     icon: <MapPin size={19} />,
     title: "Adresa",
-    lines: ["Rr. Nëna Terezë", "Prishtinë, Kosovë"],
-    href: "https://maps.google.com/?q=Rr.+N%C3%ABna+Terez%C3%AB,+Prishtin%C3%AB",
+    lines: ["Rr. Fahri Fazliu Nr-326", "Kodra e Trimave, Prishtinë"],
+    href: "https://maps.app.goo.gl/UYm7o5rTbATJKRox7",
     note: "Parking falas para objektit",
   },
   {
@@ -103,14 +104,15 @@ export default function ContactPage() {
                   Zyra qendrore
                 </p>
                 <h3 className="mt-1.5 font-display text-2xl font-bold">
-                  Rr. Nëna Terezë, Prishtinë
+                  Kodra e Trimave, Prishtinë
                 </h3>
+                <p className="mt-1 text-sm text-slate-300">Rr. Fahri Fazliu Nr-326</p>
                 <p className="mt-2 max-w-sm text-sm leading-relaxed text-slate-300">
                   Ejani për një kafe dhe shikoni modelet e ekspozuara nga afër —
                   ose kërkoni vizitë falas në hapësirën tuaj.
                 </p>
                 <a
-                  href="https://maps.google.com/?q=Rr.+N%C3%ABna+Terez%C3%AB,+Prishtin%C3%AB"
+                  href="https://maps.app.goo.gl/UYm7o5rTbATJKRox7"
                   target="_blank"
                   rel="noreferrer"
                   className="mt-5 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-semibold backdrop-blur transition-colors hover:bg-white/20 focus-ring"
@@ -118,6 +120,27 @@ export default function ContactPage() {
                   <MapPin size={15} />
                   Hape në Google Maps
                 </a>
+
+                <div className="mt-6 flex items-center gap-3 border-t border-white/10 pt-5">
+                  <span className="text-xs font-medium tracking-wide text-slate-400 uppercase">
+                    Na ndiqni
+                  </span>
+                  <ul className="flex items-center gap-2.5">
+                    {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                      <li key={label}>
+                        <a
+                          href={href}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={label}
+                          className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-white/10 text-white transition-colors hover:bg-white/20 focus-ring"
+                        >
+                          <Icon size={15} />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           </Reveal>

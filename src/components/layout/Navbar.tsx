@@ -353,10 +353,10 @@ export function Navbar() {
                 </Button>
               )}
               <a
-                href="tel:+38344000000"
+                href="tel:+38344111051"
                 className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-ink-2"
               >
-                <Phone size={15} className="text-brand-500" /> +383 44 000 000
+                <Phone size={15} className="text-brand-500" /> 044-111-051 / 049-111-051
               </a>
             </motion.div>
           </motion.div>

@@ -46,7 +46,7 @@ export async function createOrder(input: OrderInput): Promise<OrderResult> {
     return {
       ok: false,
       error:
-        "Porosia nuk u regjistrua nga një gabim i brendshëm. Provoni përsëri — nëse problemi vazhdon, na telefononi në +383 44 000 000.",
+        "Porosia nuk u regjistrua nga një gabim i brendshëm. Provoni përsëri — nëse problemi vazhdon, na telefononi në 044-111-051 / 049-111-051.",
     };
   }
 }

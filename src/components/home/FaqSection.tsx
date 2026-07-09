@@ -51,11 +51,11 @@ export function FaqSection() {
                   Na shkruani një mesazh
                 </Button>
                 <a
-                  href="tel:+38344000000"
+                  href="tel:+38344111051"
                   className="flex w-fit items-center gap-2 px-1 text-sm font-semibold text-ink-2 transition-colors hover:text-brand-600"
                 >
                   <PhoneCall size={15} className="text-brand-500" />
-                  +383 44 000 000 — çdo ditë 08:00–18:00
+                  044-111-051 / 049-111-051 — çdo ditë 08:00–18:00
                 </a>
               </div>
             </Reveal>

@@ -1,6 +1,7 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/ui/Logo";
+import { SOCIAL_LINKS } from "@/components/ui/SocialIcons";
 
 const COLUMNS = [
   {
@@ -46,44 +47,71 @@ export function Footer() {
           <div>
             <Logo onDark />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-slate-400">
-              Klimatizim, ngrohje dhe komfort termik për shtëpi dhe biznese në
-              Prishtinë e më gjerë — që nga viti 2016, me mbi 1.200 montime të
-              përfunduara.
+              KlimaENG ofron zgjidhje profesionale HVAC që nga viti 2000, të
+              specializuara në shitjen, montimin dhe servisimin e sistemeve të
+              klimatizimit dhe ngrohjes. Me mbi 25 vjet përvojë, ofrojmë
+              zgjidhje klimatike të besueshme dhe profesionale për klientët
+              tanë.
             </p>
             <ul className="mt-6 space-y-3 text-sm">
               <li>
                 <a
-                  href="https://maps.google.com/?q=Rr.+N%C3%ABna+Terez%C3%AB,+Prishtin%C3%AB"
+                  href="https://maps.app.goo.gl/UYm7o5rTbATJKRox7"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-3 text-slate-300 transition-colors hover:text-white"
                 >
                   <MapPin size={16} className="shrink-0 text-frost-400" />
-                  Rr. Nëna Terezë, Prishtinë, Kosovë
+                  Rr. Fahri Fazliu Nr-326, Kodra e Trimave, Prishtinë
                 </a>
               </li>
               <li>
                 <a
-                  href="tel:+38344000000"
+                  href="tel:+38344111051"
                   className="flex items-center gap-3 text-slate-300 transition-colors hover:text-white"
                 >
                   <Phone size={16} className="shrink-0 text-frost-400" />
-                  +383 44 000 000
+                  044-111-051
                 </a>
               </li>
               <li>
                 <a
-                  href="mailto:info@klimaeng.com"
+                  href="tel:+38349111051"
+                  className="flex items-center gap-3 text-slate-300 transition-colors hover:text-white"
+                >
+                  <Phone size={16} className="shrink-0 text-frost-400" />
+                  049-111-051
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:avnibunjaku@hotmail.com"
                   className="flex items-center gap-3 text-slate-300 transition-colors hover:text-white"
                 >
                   <Mail size={16} className="shrink-0 text-frost-400" />
-                  info@klimaeng.com
+                  avnibunjaku@hotmail.com
                 </a>
               </li>
               <li className="flex items-center gap-3 text-slate-400">
                 <Clock size={16} className="shrink-0 text-frost-400" />E Hënë – E
                 Shtunë: 08:00 – 18:00
               </li>
+            </ul>
+
+            <ul className="mt-6 flex items-center gap-3">
+              {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    className="grid h-10 w-10 place-items-center rounded-full border border-white/15 bg-white/5 text-slate-300 transition-colors hover:border-frost-400/40 hover:bg-white/10 hover:text-white focus-ring"
+                  >
+                    <Icon size={17} />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

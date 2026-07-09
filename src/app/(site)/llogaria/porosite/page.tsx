@@ -98,10 +98,10 @@ export default async function OrdersPage() {
                 : "Pa montim — vetëm dërgesa"}
             </span>
             <a
-              href="tel:+38344000000"
+              href="tel:+38344111051"
               className="font-semibold text-brand-600 hover:underline dark:text-brand-300"
             >
-              Pyetje për porosinë? +383 44 000 000
+              Pyetje për porosinë? 044-111-051 / 049-111-051
             </a>
           </footer>
         </article>

@@ -25,7 +25,7 @@ export default function GlobalError({
       </h1>
       <p className="mt-2 max-w-md text-sm leading-relaxed text-ink-2">
         Ndodhi një gabim i papritur. Provoni ta rifreskoni faqen — nëse problemi
-        vazhdon, na njoftoni në info@klimaeng.com.
+        vazhdon, na njoftoni në avnibunjaku@hotmail.com.
       </p>
       <div className="mt-7 flex gap-3">
         <button

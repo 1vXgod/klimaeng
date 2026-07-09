@@ -73,9 +73,9 @@ export default function AdminSettingsPage() {
             [
               ["Emri", "KlimaENG SH.P.K."],
               ["NUI", "81XXXXXXX"],
-              ["Adresa", "Rr. Nëna Terezë, Prishtinë"],
-              ["Telefoni", "+383 44 000 000"],
-              ["Email", "info@klimaeng.com"],
+              ["Adresa", "Rr. Fahri Fazliu Nr-326, Kodra e Trimave, Prishtinë"],
+              ["Telefoni", "044-111-051 · 049-111-051"],
+              ["Email", "avnibunjaku@hotmail.com"],
               ["Orari", "Hën–Sht 08:00–18:00"],
             ] as const
           ).map(([label, value]) => (
