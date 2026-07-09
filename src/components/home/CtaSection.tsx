@@ -30,7 +30,7 @@ export function CtaSection() {
                 size="lg"
                 className="group w-full bg-white !text-brand-700 shadow-xl hover:bg-brand-50 sm:w-auto from-white to-white"
               >
-                Kërko Ofertë Falas
+                Na Kontaktoni
                 <ArrowRight size={17} className="transition-transform group-hover:translate-x-0.5" />
               </Button>
               <Button href="tel:+38344000000" variant="frost" size="lg" className="w-full sm:w-auto">

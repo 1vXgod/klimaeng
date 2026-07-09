@@ -97,7 +97,7 @@ function AccountMenu() {
         </span>
         <ChevronDown
           size={14}
-          className={cn("mr-1 text-muted transition-transform", open && "rotate-180")}
+          className={cn("mr-1 hidden text-muted transition-transform sm:block", open && "rotate-180")}
         />
       </button>
       <AnimatePresence>
@@ -158,12 +158,16 @@ export function Navbar() {
   const pathname = usePathname();
   const scrolled = useScrolled();
   const mounted = useMounted();
+  const { data: session } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const wishlistCount = useWishlist((s) => s.items.length);
   const compareCount = useCompare((s) => s.items.length);
   const cartCount = useCart((s) => s.items.reduce((a, i) => a + i.qty, 0));
   const openCart = useCart((s) => s.open);
+
+  // Wishlist & cart are member features — shown only after login.
+  const loggedIn = !!session?.user;
 
   // Close the mobile menu on navigation (derived-state pattern, no effect).
   const [lastPath, setLastPath] = useState(pathname);
@@ -246,42 +250,38 @@ export function Navbar() {
                 <CountBubble count={compareCount} />
               </Link>
             )}
-            <Link
-              href="/lista-e-deshirave"
-              aria-label="Lista e dëshirave"
-              className={cn(
-                "relative rounded-full p-2 transition-colors focus-ring sm:p-2.5",
-                onHero
-                  ? "text-slate-300 hover:bg-white/10 hover:text-white"
-                  : "text-ink-2 hover:bg-surface-2 hover:text-ink"
-              )}
-            >
-              <Heart size={19} />
-              {mounted && <CountBubble count={wishlistCount} />}
-            </Link>
-            <button
-              onClick={openCart}
-              aria-label="Shporta"
-              className={cn(
-                "relative rounded-full p-2 transition-colors focus-ring sm:p-2.5",
-                onHero
-                  ? "text-slate-300 hover:bg-white/10 hover:text-white"
-                  : "text-ink-2 hover:bg-surface-2 hover:text-ink"
-              )}
-            >
-              <ShoppingBag size={19} />
-              {mounted && <CountBubble count={cartCount} />}
-            </button>
+            {loggedIn && (
+              <>
+                <Link
+                  href="/lista-e-deshirave"
+                  aria-label="Lista e dëshirave"
+                  className={cn(
+                    "relative rounded-full p-2 transition-colors focus-ring sm:p-2.5",
+                    onHero
+                      ? "text-slate-300 hover:bg-white/10 hover:text-white"
+                      : "text-ink-2 hover:bg-surface-2 hover:text-ink"
+                  )}
+                >
+                  <Heart size={19} />
+                  {mounted && <CountBubble count={wishlistCount} />}
+                </Link>
+                <button
+                  onClick={openCart}
+                  aria-label="Shporta"
+                  className={cn(
+                    "relative rounded-full p-2 transition-colors focus-ring sm:p-2.5",
+                    onHero
+                      ? "text-slate-300 hover:bg-white/10 hover:text-white"
+                      : "text-ink-2 hover:bg-surface-2 hover:text-ink"
+                  )}
+                >
+                  <ShoppingBag size={19} />
+                  {mounted && <CountBubble count={cartCount} />}
+                </button>
+              </>
+            )}
 
             <AccountMenu />
-
-            <Button
-              href="/kontakti"
-              size="sm"
-              className="ml-1 hidden rounded-full xl:inline-flex"
-            >
-              Kërko Ofertë
-            </Button>
 
             <button
               onClick={() => setMobileOpen(true)}
@@ -347,12 +347,11 @@ export function Navbar() {
               transition={{ delay: 0.34 }}
               className="container-site mt-auto mb-8 space-y-3"
             >
-              <Button href="/kycu" variant="secondary" className="w-full sm:hidden">
-                <User size={16} /> Kyçu në llogari
-              </Button>
-              <Button href="/kontakti" size="lg" className="w-full">
-                Kërko Ofertë Falas
-              </Button>
+              {!loggedIn && (
+                <Button href="/kycu" size="lg" className="w-full">
+                  <User size={16} /> Kyçu në llogari
+                </Button>
+              )}
               <a
                 href="tel:+38344000000"
                 className="flex items-center justify-center gap-2 py-2 text-sm font-semibold text-ink-2"

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BackToTop } from "@/components/layout/BackToTop";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
@@ -13,6 +14,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <Footer />
       <CartDrawer />
       <CompareBar />
+      <BackToTop />
       <ChatWidget />
     </>
   );

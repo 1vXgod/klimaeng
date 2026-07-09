@@ -24,10 +24,10 @@ export function LogoMark({ className, size = 34 }: { className?: string; size?: 
 
 function DarkWordmark({ className }: { className?: string }) {
   return (
-    <span className={cn("items-center gap-2.5", className)}>
-      <LogoMark />
+    <span className={cn("items-center gap-2 sm:gap-2.5", className)}>
+      <LogoMark className="h-[30px] w-[30px] sm:h-[34px] sm:w-[34px]" />
       <span className="inline-flex items-start">
-        <span className="font-display text-[19px] leading-none font-bold tracking-tight">
+        <span className="font-display text-[17px] leading-none font-bold tracking-tight sm:text-[19px]">
           <span className="text-[#5cc0de]">Klima</span>
           <span className="text-white">ENG</span>
         </span>
@@ -58,7 +58,7 @@ export function Logo({
         alt="KlimaENG"
         width={140}
         height={34}
-        className="h-[34px] w-auto select-none dark:hidden"
+        className="h-[30px] w-auto select-none sm:h-[34px] dark:hidden"
         priority
       />
       <DarkWordmark className="hidden dark:inline-flex" />
