@@ -22,6 +22,7 @@ export default async function AdminProductsPage() {
         featured: p.featured,
         render: p.render,
         accent: p.accent,
+        imageUrl: p.imageUrl,
       }))}
     />
   );

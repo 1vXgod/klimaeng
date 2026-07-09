@@ -2,6 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { Pencil, Plus, Search, Star, StarOff, Trash2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
@@ -25,6 +26,7 @@ export type AdminProduct = {
   featured: boolean;
   render: string;
   accent: string;
+  imageUrl: string | null;
 };
 
 export function ProductsTable({ products }: { products: AdminProduct[] }) {
@@ -199,13 +201,25 @@ export function ProductsTable({ products }: { products: AdminProduct[] }) {
                   </td>
                   <td className="px-3 py-3">
                     <div className="flex items-center gap-3">
-                      <span className="h-11 w-14 shrink-0 overflow-hidden rounded-lg border border-line bg-surface-2">
-                        <ProductVisual
-                          render={product.render}
-                          accent={product.accent}
-                          className="h-full w-full p-0.5"
-                          glow={false}
-                        />
+                      <span className="relative block h-11 w-14 shrink-0 overflow-hidden rounded-lg border border-line bg-surface-2">
+                        {product.imageUrl ? (
+                          <Image
+                            src={product.imageUrl}
+                            alt={product.name}
+                            fill
+                            // unoptimized matches the client card: uploads may be SVG,
+                            // which the image optimizer rejects without dangerouslyAllowSVG
+                            unoptimized
+                            className="object-contain p-0.5"
+                          />
+                        ) : (
+                          <ProductVisual
+                            render={product.render}
+                            accent={product.accent}
+                            className="h-full w-full p-0.5"
+                            glow={false}
+                          />
+                        )}
                       </span>
                       <div className="min-w-0">
                         <Link
