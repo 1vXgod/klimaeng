@@ -19,12 +19,6 @@ export default async function ProductsPage({
   const { kategoria } = await searchParams;
   const products = await getAllProducts();
 
-  // TODO: temporary debug — remove after verifying public images
-  console.log(
-    "[debug] /produktet products:",
-    products.map((p) => ({ id: p.id, name: p.name, imageUrl: p.imageUrl }))
-  );
-
   return (
     <>
       <PageHero

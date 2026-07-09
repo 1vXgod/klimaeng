@@ -38,13 +38,6 @@ export function ProductCard({
   const inCompare = mounted && compare.has(product.id);
   const soldOut = product.stock !== undefined && product.stock <= 0;
 
-  // TODO: temporary debug — remove after verifying public images
-  console.log(
-    "[debug] ProductCard image src:",
-    product.name,
-    product.imageUrl ?? "(no imageUrl — SVG render fallback)"
-  );
-
   return (
     <motion.article
       initial={{ opacity: 0, y: 22 }}
