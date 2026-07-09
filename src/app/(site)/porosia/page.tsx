@@ -9,8 +9,8 @@ import { ProductVisual } from "@/components/renders/ProductRender";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Switch, Textarea } from "@/components/ui/Field";
 import { useMounted } from "@/lib/hooks";
-import { formatEur } from "@/lib/utils";
-import { useCart } from "@/stores/shop";
+import { formatBtu, formatEur } from "@/lib/utils";
+import { cartLineKey, useCart } from "@/stores/shop";
 
 export default function CheckoutPage() {
   const mounted = useMounted();
@@ -34,7 +34,7 @@ export default function CheckoutPage() {
         street: String(formData.get("street") ?? ""),
         note: String(formData.get("note") ?? ""),
         withInstallation,
-        items: items.map((i) => ({ productId: i.id, qty: i.qty })),
+        items: items.map((i) => ({ productId: i.id, qty: i.qty, variantBtu: i.variantBtu ?? null })),
       });
       if (result.ok) {
         setDone(result.orderNo);
@@ -199,18 +199,24 @@ export default function CheckoutPage() {
             <div className="rounded-3xl border border-line bg-surface p-6 card-shadow">
               <h2 className="font-display text-lg font-bold text-ink">Përmbledhja</h2>
               <ul className="mt-4 divide-y divide-line">
-                {items.map((item) => (
-                  <li key={item.id} className="flex items-center gap-3 py-3">
-                    <span className="h-13 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-2">
-                      <ProductVisual render={item.render} accent={item.accent} className="h-full w-full p-1" glow={false} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-ink">{item.name}</span>
-                      <span className="text-xs text-muted">{item.qty} × {formatEur(item.price)}</span>
-                    </span>
-                    <span className="text-sm font-bold text-ink">{formatEur(item.price * item.qty)}</span>
-                  </li>
-                ))}
+                {items.map((item) => {
+                  const btu = item.variantBtu ?? item.btu;
+                  return (
+                    <li key={cartLineKey(item)} className="flex items-center gap-3 py-3">
+                      <span className="h-13 w-16 shrink-0 overflow-hidden rounded-xl bg-surface-2">
+                        <ProductVisual render={item.render} accent={item.accent} className="h-full w-full p-1" glow={false} />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold text-ink">{item.name}</span>
+                        <span className="text-xs text-muted">
+                          {btu ? `${formatBtu(btu)} · ` : ""}
+                          {item.qty} × {formatEur(item.price)}
+                        </span>
+                      </span>
+                      <span className="text-sm font-bold text-ink">{formatEur(item.price * item.qty)}</span>
+                    </li>
+                  );
+                })}
               </ul>
               <div className="mt-2 space-y-2 border-t border-line pt-4 text-sm">
                 <div className="flex justify-between text-ink-2">

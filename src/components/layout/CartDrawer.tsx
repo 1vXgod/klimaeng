@@ -5,8 +5,8 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/Button";
 import { ProductVisual } from "@/components/renders/ProductRender";
-import { formatEur } from "@/lib/utils";
-import { useCart } from "@/stores/shop";
+import { formatBtu, formatEur } from "@/lib/utils";
+import { cartLineKey, useCart } from "@/stores/shop";
 
 export function CartDrawer() {
   const { items, isOpen, close, setQty, remove } = useCart();
@@ -79,9 +79,12 @@ export function CartDrawer() {
             ) : (
               <>
                 <ul className="flex-1 divide-y divide-line overflow-y-auto px-5">
-                  {items.map((item) => (
+                  {items.map((item) => {
+                    const key = cartLineKey(item);
+                    const btu = item.variantBtu ?? item.btu;
+                    return (
                     <motion.li
-                      key={item.id}
+                      key={key}
                       layout
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -93,11 +96,14 @@ export function CartDrawer() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-semibold text-ink">{item.name}</p>
-                        <p className="mt-0.5 text-xs text-muted">{item.brand}</p>
+                        <p className="mt-0.5 text-xs text-muted">
+                          {item.brand}
+                          {btu ? ` · ${formatBtu(btu)}` : ""}
+                        </p>
                         <div className="mt-2 flex items-center justify-between">
                           <div className="flex items-center rounded-full border border-line-2">
                             <button
-                              onClick={() => setQty(item.id, item.qty - 1)}
+                              onClick={() => setQty(key, item.qty - 1)}
                               aria-label="Zvogëlo sasinë"
                               className="p-1.5 text-muted transition-colors hover:text-ink focus-ring rounded-l-full"
                             >
@@ -107,7 +113,7 @@ export function CartDrawer() {
                               {item.qty}
                             </span>
                             <button
-                              onClick={() => setQty(item.id, item.qty + 1)}
+                              onClick={() => setQty(key, item.qty + 1)}
                               aria-label="Rrit sasinë"
                               className="p-1.5 text-muted transition-colors hover:text-ink focus-ring rounded-r-full"
                             >
@@ -119,7 +125,7 @@ export function CartDrawer() {
                               {formatEur(item.price * item.qty)}
                             </span>
                             <button
-                              onClick={() => remove(item.id)}
+                              onClick={() => remove(key)}
                               aria-label={`Hiq ${item.name}`}
                               className="rounded-full p-1.5 text-muted transition-colors hover:bg-red-50 hover:text-red-500 focus-ring dark:hover:bg-red-500/10"
                             >
@@ -129,7 +135,8 @@ export function CartDrawer() {
                         </div>
                       </div>
                     </motion.li>
-                  ))}
+                    );
+                  })}
                 </ul>
 
                 <div className="space-y-3 border-t border-line p-5">

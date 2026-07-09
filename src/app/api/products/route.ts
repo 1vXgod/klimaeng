@@ -29,6 +29,12 @@ export async function GET() {
       discountEnabled: true,
       discountStart: true,
       discountEnd: true,
+      btu18Enabled: true,
+      btu18Price: true,
+      btu18SalePrice: true,
+      btu24Enabled: true,
+      btu24Price: true,
+      btu24SalePrice: true,
     },
     orderBy: { price: "asc" },
   });

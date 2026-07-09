@@ -50,6 +50,12 @@ export default async function EditProductPage({
           discountEnabled: product.discountEnabled,
           discountStart: product.discountStart?.toISOString() ?? null,
           discountEnd: product.discountEnd?.toISOString() ?? null,
+          btu18Enabled: product.btu18Enabled,
+          btu18Price: product.btu18Price,
+          btu18SalePrice: product.btu18SalePrice,
+          btu24Enabled: product.btu24Enabled,
+          btu24Price: product.btu24Price,
+          btu24SalePrice: product.btu24SalePrice,
         }}
       />
     </div>

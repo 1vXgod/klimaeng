@@ -99,6 +99,16 @@ model Product {
   discountEnabled Boolean     @default(false)
   discountStart   DateTime?
   discountEnd     DateTime?
+  /// Optional higher-capacity price variants. The base price/oldPrice pair is
+  /// the 12.000 BTU (or the product's own `btu`) price, so existing products
+  /// keep working with a single card. To add a capacity later (e.g. 36k),
+  /// add a column trio here and one entry in BTU_VARIANTS (lib/utils.ts).
+  btu18Enabled    Boolean     @default(false)
+  btu18Price      Int?
+  btu18SalePrice  Int?
+  btu24Enabled    Boolean     @default(false)
+  btu24Price      Int?
+  btu24SalePrice  Int?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   orderItems      OrderItem[]

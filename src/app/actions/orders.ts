@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { receiptEmail } from "@/lib/email-templates";
 import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { formatBtu, getBtuVariants } from "@/lib/utils";
 
 export type OrderInput = {
   customerName: string;
@@ -15,7 +16,8 @@ export type OrderInput = {
   street: string;
   note?: string;
   withInstallation: boolean;
-  items: { productId: string; qty: number }[];
+  /** variantBtu picks a higher-capacity price variant; null = base price. */
+  items: { productId: string; qty: number; variantBtu?: number | null }[];
 };
 
 export type OrderResult =
@@ -74,10 +76,31 @@ async function createOrderInner(input: OrderInput): Promise<OrderResult> {
     const product = products.find((p) => p.id === item.productId);
     if (!product) return [];
     const qty = Math.min(Math.max(1, Math.floor(item.qty)), 9);
-    return [{ product, qty }];
+    // Re-resolve the BTU variant server-side; a capacity disabled between
+    // add-to-cart and checkout is dropped like a deleted product, never
+    // silently re-priced.
+    const variants = getBtuVariants(product);
+    const variant = item.variantBtu
+      ? variants.find((v) => v.btu === item.variantBtu)
+      : variants[0];
+    if (!variant) return [];
+    const suffix =
+      variant !== variants[0] && variant.btu !== null ? ` — ${formatBtu(variant.btu)}` : "";
+    return [{ product, qty, price: variant.price, lineName: product.name + suffix }];
   });
+  // Every line may have been dropped (deleted products / disabled variants) —
+  // never register an empty zero-total order.
+  if (items.length === 0)
+    return { ok: false, error: "Produktet në shportë nuk janë më të disponueshme." };
 
-  const outOfStock = items.find(({ product, qty }) => product.stock < qty);
+  // Stock is product-level; two capacity lines of the same product draw from
+  // the same pool, so check the summed quantity per product.
+  const qtyByProduct = new Map<string, number>();
+  for (const { product, qty } of items)
+    qtyByProduct.set(product.id, (qtyByProduct.get(product.id) ?? 0) + qty);
+  const outOfStock = items.find(
+    ({ product }) => product.stock < (qtyByProduct.get(product.id) ?? 0)
+  );
   if (outOfStock) {
     return {
       ok: false,
@@ -85,7 +108,7 @@ async function createOrderInner(input: OrderInput): Promise<OrderResult> {
     };
   }
 
-  const total = items.reduce((sum, { product, qty }) => sum + product.price * qty, 0);
+  const total = items.reduce((sum, { price, qty }) => sum + price * qty, 0);
 
   // A broken/misconfigured session must never block a guest order.
   const session = await auth().catch(() => null);
@@ -113,10 +136,10 @@ async function createOrderInner(input: OrderInput): Promise<OrderResult> {
             withInstallation: input.withInstallation,
             total,
             items: {
-              create: items.map(({ product, qty }) => ({
+              create: items.map(({ product, lineName, price, qty }) => ({
                 productId: product.id,
-                name: product.name,
-                price: product.price,
+                name: lineName,
+                price,
                 qty,
               })),
             },
@@ -171,11 +194,11 @@ async function createOrderInner(input: OrderInput): Promise<OrderResult> {
       customerName: name,
       orderNo: order.orderNo,
       date: order.createdAt,
-      items: items.map(({ product, qty }) => ({
-        name: product.name,
+      items: items.map(({ product, lineName, qty, price }) => ({
+        name: lineName,
         code: product.slug,
         qty,
-        price: product.price,
+        price,
       })),
       total,
       city,

@@ -59,6 +59,8 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
   const [inverter, setInverter] = useState(initial?.inverter ?? true);
   const [featured, setFeatured] = useState(initial?.featured ?? false);
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
+  const [btu18Enabled, setBtu18Enabled] = useState(initial?.btu18Enabled ?? false);
+  const [btu24Enabled, setBtu24Enabled] = useState(initial?.btu24Enabled ?? false);
   const [discountEnabled, setDiscountEnabled] = useState(initial?.discountEnabled ?? false);
   const [discountStart, setDiscountStart] = useState(() => toDatetimeLocalValue(initial?.discountStart));
   const [discountEnd, setDiscountEnd] = useState(() => toDatetimeLocalValue(initial?.discountEnd));
@@ -123,14 +125,18 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
       const v = String(formData.get(name) ?? "").trim();
       return v ? Number(v) : null;
     };
+    // The DB stores the selling price in `price` and the struck-through
+    // regular price in `oldPrice`; the form speaks regular/sale instead.
+    const regularPrice = num("regularPrice") ?? 0;
+    const salePrice = num("salePrice");
     startTransition(async () => {
       const result = await saveProduct({
         id: initial?.id,
         name: String(formData.get("name") ?? ""),
         brand: String(formData.get("brand") ?? ""),
         category: String(formData.get("category") ?? "SPLIT"),
-        price: num("price") ?? 0,
-        oldPrice: num("oldPrice"),
+        price: salePrice ?? regularPrice,
+        oldPrice: salePrice ? regularPrice : null,
         shortDesc: String(formData.get("shortDesc") ?? ""),
         description: String(formData.get("description") ?? ""),
         btu: num("btu"),
@@ -157,6 +163,12 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         discountEnabled,
         discountStart: discountEnabled && discountStart ? new Date(discountStart).toISOString() : null,
         discountEnd: discountEnabled && discountEnd ? new Date(discountEnd).toISOString() : null,
+        btu18Enabled,
+        btu18Price: btu18Enabled ? num("btu18Price") : null,
+        btu18SalePrice: btu18Enabled ? num("btu18SalePrice") : null,
+        btu24Enabled,
+        btu24Price: btu24Enabled ? num("btu24Price") : null,
+        btu24SalePrice: btu24Enabled ? num("btu24SalePrice") : null,
       });
       if (result.ok) {
         toast(initial?.id ? "Produkti u përditësua" : "Produkti u krijua");
@@ -220,14 +232,43 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         </section>
 
         <section className="rounded-3xl border border-line bg-surface p-6 card-shadow">
-          <h2 className="font-display text-[15px] font-bold text-ink">Çmimi & stoku</h2>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
-            <Field label="Çmimi (€) *">
-              <Input name="price" type="number" required min={1} defaultValue={initial?.price || ""} />
-            </Field>
-            <Field label="Çmimi i vjetër (€)" hint="Për të shfaqur zbritjen">
-              <Input name="oldPrice" type="number" min={1} defaultValue={initial?.oldPrice ?? ""} />
-            </Field>
+          <h2 className="font-display text-[15px] font-bold text-ink">Çmimet sipas kapacitetit</h2>
+          <p className="mt-1 text-xs text-muted">
+            Varianti 12.000 BTU është gjithmonë aktiv. Aktivizoni 18.000/24.000 BTU që
+            të shfaqen si karta çmimi në faqen e produktit.
+          </p>
+
+          <div className="mt-5 space-y-3">
+            <VariantPriceBlock
+              label="12.000 BTU"
+              always
+              enabled
+              priceName="regularPrice"
+              saleName="salePrice"
+              initialPrice={initial ? (initial.oldPrice ?? initial.price) : null}
+              initialSale={initial?.oldPrice ? initial.price : null}
+            />
+            <VariantPriceBlock
+              label="18.000 BTU"
+              enabled={btu18Enabled}
+              onToggle={setBtu18Enabled}
+              priceName="btu18Price"
+              saleName="btu18SalePrice"
+              initialPrice={initial?.btu18Price ?? null}
+              initialSale={initial?.btu18SalePrice ?? null}
+            />
+            <VariantPriceBlock
+              label="24.000 BTU"
+              enabled={btu24Enabled}
+              onToggle={setBtu24Enabled}
+              priceName="btu24Price"
+              saleName="btu24SalePrice"
+              initialPrice={initial?.btu24Price ?? null}
+              initialSale={initial?.btu24SalePrice ?? null}
+            />
+          </div>
+
+          <div className="mt-5 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
             <Field label="Stoku *">
               <Input name="stock" type="number" required min={0} defaultValue={initial?.stock ?? 0} />
             </Field>
@@ -500,6 +541,56 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         </div>
       </Modal>
     </form>
+  );
+}
+
+/**
+ * One BTU capacity's pricing: an enable toggle (except the always-on base
+ * variant) plus regular/sale price inputs. Disabled variants don't submit
+ * their inputs, so their stored prices are wiped on save.
+ */
+function VariantPriceBlock({
+  label,
+  enabled,
+  always,
+  onToggle,
+  priceName,
+  saleName,
+  initialPrice,
+  initialSale,
+}: {
+  label: string;
+  enabled: boolean;
+  always?: boolean;
+  onToggle?: (v: boolean) => void;
+  priceName: string;
+  saleName: string;
+  initialPrice: number | null;
+  initialSale: number | null;
+}) {
+  return (
+    <div className="rounded-2xl border border-line bg-bg p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-bold text-ink">{label}</span>
+        {always ? (
+          <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-bold text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+            Gjithmonë aktiv
+          </span>
+        ) : (
+          <Switch checked={enabled} onChange={(v) => onToggle?.(v)} label={`Aktivizo ${label}`} />
+        )}
+      </div>
+      {enabled && (
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <Field label="Çmimi i rregullt (€) *">
+            <Input name={priceName} type="number" required min={1} defaultValue={initialPrice ?? ""} />
+          </Field>
+          <Field label="Çmimi me zbritje (€)" hint="Opsional — i rregullti shfaqet i shënjuar">
+            <Input name={saleName} type="number" min={1} defaultValue={initialSale ?? ""} />
+          </Field>
+        </div>
+      )}
+    </div>
   );
 }
 

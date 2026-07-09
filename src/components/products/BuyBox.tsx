@@ -2,11 +2,12 @@
 
 import { Check, Heart, Minus, Plus, Scale, ShieldCheck, ShoppingBag, Timer, Truck, Wrench } from "lucide-react";
 import { useState } from "react";
+import { BtuPricingCards } from "@/components/products/BtuPricingCards";
 import { Badge } from "@/components/ui/Badge";
 import { EnergyBadge } from "@/components/ui/EnergyBadge";
 import { toast } from "@/components/ui/Toast";
 import { useLiveDiscount, useMounted } from "@/lib/hooks";
-import { cn, discountPercent, formatEur, formatRemaining, type DiscountInfo } from "@/lib/utils";
+import { cn, discountPercent, formatRemaining, type BtuVariant, type DiscountInfo } from "@/lib/utils";
 import { MAX_COMPARE, useCart, useCompare, useWishlist, type ProductSnapshot } from "@/stores/shop";
 
 export type BuyBoxProduct = ProductSnapshot & {
@@ -15,17 +16,29 @@ export type BuyBoxProduct = ProductSnapshot & {
   warrantyYears: number;
   badge?: string | null;
   discount: DiscountInfo;
+  /** Enabled BTU price variants, base capacity first (see getBtuVariants). */
+  variants: BtuVariant[];
 };
 
 export function BuyBox({ product }: { product: BuyBoxProduct }) {
   const mounted = useMounted();
   const [qty, setQty] = useState(1);
+  const [selectedIdx, setSelectedIdx] = useState(0);
   const cart = useCart();
   const wishlist = useWishlist();
   const compare = useCompare();
 
-  const liveDiscount = useLiveDiscount(product.discount);
-  const discount = liveDiscount.active ? discountPercent(product.price, product.oldPrice) : null;
+  const selected = product.variants[selectedIdx] ?? product.variants[0];
+  const isBaseSelected = selected === product.variants[0];
+
+  // Tick the shared product-level window even when only a variant (not the
+  // base pair) carries the sale, so the countdown chip still shows.
+  const timerDiscount =
+    product.variants.find((v) => v.discount.endsAt)?.discount ?? product.discount;
+  const liveDiscount = useLiveDiscount(timerDiscount);
+  const saleActive =
+    selected.discount.active && (!selected.discount.endsAt || liveDiscount.active);
+  const discount = saleActive ? discountPercent(selected.price, selected.oldPrice) : null;
   const inWishlist = mounted && wishlist.has(product.id);
   const inCompare = mounted && compare.has(product.id);
   const lowStock = product.stock > 0 && product.stock <= 5;
@@ -50,25 +63,24 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {product.energyCool && <EnergyBadge value={product.energyCool} mode="cool" />}
         {product.energyHeat && <EnergyBadge value={product.energyHeat} mode="heat" />}
-        {product.btu && (
+        {(selected.btu ?? product.btu) && (
           <span className="rounded-lg bg-surface-2 px-2.5 py-1 text-xs font-bold text-ink-2">
-            {product.btu.toLocaleString("de-DE")} BTU
+            {(selected.btu ?? product.btu)!.toLocaleString("de-DE")} BTU
           </span>
         )}
       </div>
 
-      {/* price */}
-      <div className="mt-6 flex items-end gap-3">
-        <span className="font-display text-4xl font-extrabold text-ink">
-          {formatEur(product.price)}
-        </span>
-        {liveDiscount.active && product.oldPrice && (
-          <span className="mb-1 text-lg font-medium text-muted line-through">
-            {formatEur(product.oldPrice)}
-          </span>
-        )}
+      {/* price — one selectable card per enabled BTU variant */}
+      <div className="mt-6">
+        <BtuPricingCards
+          variants={product.variants}
+          selected={selectedIdx}
+          onSelect={setSelectedIdx}
+          energyCool={product.energyCool}
+          energyHeat={product.energyHeat}
+        />
       </div>
-      <p className="mt-1 text-xs text-muted">Përfshirë TVSH-në · Pa kosto të fshehura</p>
+      <p className="mt-2 text-xs text-muted">Përfshirë TVSH-në · Pa kosto të fshehura</p>
       {liveDiscount.active && liveDiscount.remainingMs !== null && (
         <p className="mt-2 inline-flex w-fit items-center gap-1.5 rounded-full border border-flame-200 bg-flame-50 px-3 py-1 text-xs font-semibold text-flame-600 dark:border-flame-500/25 dark:bg-flame-500/10 dark:text-flame-300">
           <Timer size={13} className="shrink-0" />
@@ -111,7 +123,27 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
 
         <button
           onClick={() => {
-            cart.add(product, qty);
+            // A clean snapshot at the selected variant's price — spreading
+            // `product` would persist variants/stock/etc. into localStorage.
+            cart.add(
+              {
+                id: product.id,
+                slug: product.slug,
+                name: product.name,
+                brand: product.brand,
+                price: selected.price,
+                oldPrice: selected.oldPrice,
+                render: product.render,
+                accent: product.accent,
+                imageUrl: product.imageUrl,
+                category: product.category,
+                btu: selected.btu ?? product.btu,
+                energyCool: product.energyCool,
+                energyHeat: product.energyHeat,
+                variantBtu: isBaseSelected ? null : selected.btu,
+              },
+              qty
+            );
             toast("U shtua në shportë");
           }}
           disabled={soldOut}

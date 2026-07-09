@@ -8,7 +8,14 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { Reveal } from "@/components/ui/Reveal";
 import { getProductBySlug, getSimilarProducts, toSnapshot } from "@/lib/products";
-import { CATEGORY_LABELS, getDiscountInfo, parseFeatures, parseImages } from "@/lib/utils";
+import {
+  CATEGORY_LABELS,
+  formatBtu,
+  getBtuVariants,
+  getDiscountInfo,
+  parseFeatures,
+  parseImages,
+} from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -36,11 +43,13 @@ export default async function ProductPage({
 
   const similar = await getSimilarProducts(product, 4);
   const features = parseFeatures(product.features);
+  const variants = getBtuVariants(product);
+  const capacities = variants.flatMap((v) => (v.btu !== null ? [formatBtu(v.btu)] : []));
 
   const specs: [string, string][] = [
     ["Marka", product.brand],
     ["Kategoria", CATEGORY_LABELS[product.category] ?? product.category],
-    ...(product.btu ? ([["Kapaciteti", `${product.btu.toLocaleString("de-DE")} BTU`]] as [string, string][]) : []),
+    ...(capacities.length ? ([["Kapaciteti", capacities.join(" / ")]] as [string, string][]) : []),
     ...(product.coverageM2 ? ([["Mbulimi", `deri në ${product.coverageM2} m²`]] as [string, string][]) : []),
     ...(product.energyCool ? ([["Klasa energjetike (ftohje)", product.energyCool]] as [string, string][]) : []),
     ...(product.energyHeat ? ([["Klasa energjetike (ngrohje)", product.energyHeat]] as [string, string][]) : []),
@@ -90,6 +99,7 @@ export default async function ProductPage({
                 warrantyYears: product.warrantyYears,
                 badge: product.badge,
                 discount: getDiscountInfo(product),
+                variants,
               }}
             />
           </Reveal>

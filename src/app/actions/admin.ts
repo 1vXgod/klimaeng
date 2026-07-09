@@ -43,6 +43,17 @@ export type ProductInput = {
   discountEnabled: boolean;
   discountStart?: string | null;
   discountEnd?: string | null;
+  /**
+   * Optional higher-capacity price variants; the base price/oldPrice pair is
+   * the 12.000 BTU price. Regular price is required when a variant is
+   * enabled; the sale price must undercut it.
+   */
+  btu18Enabled: boolean;
+  btu18Price?: number | null;
+  btu18SalePrice?: number | null;
+  btu24Enabled: boolean;
+  btu24Price?: number | null;
+  btu24SalePrice?: number | null;
 };
 
 function slugify(name: string) {
@@ -63,13 +74,33 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
   if (!input.price || input.price <= 0)
     return { ok: false, error: "Çmimi duhet të jetë më i madh se 0." };
   if (input.oldPrice && input.oldPrice <= input.price)
-    return { ok: false, error: "Çmimi i vjetër duhet të jetë më i lartë se çmimi aktual." };
+    return { ok: false, error: "Çmimi me zbritje duhet të jetë më i ulët se çmimi i rregullt." };
+
+  // Higher-capacity variants: label → [enabled, regular, sale]. Disabled
+  // variants are wiped so the DB mirrors what the form shows.
+  const variantInputs: [string, boolean, number | null | undefined, number | null | undefined][] = [
+    ["18.000 BTU", input.btu18Enabled, input.btu18Price, input.btu18SalePrice],
+    ["24.000 BTU", input.btu24Enabled, input.btu24Price, input.btu24SalePrice],
+  ];
+  for (const [label, enabled, regular, sale] of variantInputs) {
+    if (!enabled) continue;
+    if (!regular || regular <= 0)
+      return { ok: false, error: `Vendosni çmimin e rregullt për variantin ${label}.` };
+    if (sale && sale >= regular)
+      return {
+        ok: false,
+        error: `Çmimi me zbritje i variantit ${label} duhet të jetë më i ulët se çmimi i rregullt.`,
+      };
+  }
 
   let discountStart: Date | null = null;
   let discountEnd: Date | null = null;
   if (input.discountEnabled) {
-    if (!input.oldPrice)
-      return { ok: false, error: "Vendosni çmimin e vjetër për të aktivizuar kohëmatësin e zbritjes." };
+    const hasAnySale =
+      !!input.oldPrice ||
+      variantInputs.some(([, enabled, regular, sale]) => enabled && regular && sale && sale < regular);
+    if (!hasAnySale)
+      return { ok: false, error: "Vendosni një çmim me zbritje për të aktivizuar kohëmatësin e zbritjes." };
     if (!input.discountStart || !input.discountEnd)
       return { ok: false, error: "Zgjidhni datën e fillimit dhe të mbarimit të zbritjes." };
     discountStart = new Date(input.discountStart);
@@ -116,6 +147,12 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
     discountEnabled: !!input.discountEnabled,
     discountStart,
     discountEnd,
+    btu18Enabled: !!input.btu18Enabled,
+    btu18Price: input.btu18Enabled && input.btu18Price ? Math.round(input.btu18Price) : null,
+    btu18SalePrice: input.btu18Enabled && input.btu18SalePrice ? Math.round(input.btu18SalePrice) : null,
+    btu24Enabled: !!input.btu24Enabled,
+    btu24Price: input.btu24Enabled && input.btu24Price ? Math.round(input.btu24Price) : null,
+    btu24SalePrice: input.btu24Enabled && input.btu24SalePrice ? Math.round(input.btu24SalePrice) : null,
   };
 
   let id = input.id;
