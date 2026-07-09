@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { prisma } from "@/lib/prisma";
-import { parseFeatures } from "@/lib/utils";
+import { parseFeatures, parseImages } from "@/lib/utils";
 
 export const metadata = { title: "Ndrysho produktin" };
 
@@ -46,7 +46,7 @@ export default async function EditProductPage({
           render: product.render,
           accent: product.accent,
           features: parseFeatures(product.features),
-          imageUrl: product.imageUrl,
+          images: parseImages(product.images, product.imageUrl),
           discountEnabled: product.discountEnabled,
           discountStart: product.discountStart?.toISOString() ?? null,
           discountEnd: product.discountEnd?.toISOString() ?? null,

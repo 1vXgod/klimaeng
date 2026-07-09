@@ -58,7 +58,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
   const [wifi, setWifi] = useState(initial?.wifi ?? false);
   const [inverter, setInverter] = useState(initial?.inverter ?? true);
   const [featured, setFeatured] = useState(initial?.featured ?? false);
-  const [imageUrl, setImageUrl] = useState<string | null>(initial?.imageUrl ?? null);
+  const [images, setImages] = useState<string[]>(initial?.images ?? []);
   const [discountEnabled, setDiscountEnabled] = useState(initial?.discountEnabled ?? false);
   const [discountStart, setDiscountStart] = useState(() => toDatetimeLocalValue(initial?.discountStart));
   const [discountEnd, setDiscountEnd] = useState(() => toDatetimeLocalValue(initial?.discountEnd));
@@ -66,43 +66,54 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
   const [dragging, setDragging] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const upload = useCallback(async (file: File) => {
-    setUploading(true);
-    try {
-      const body = new FormData();
-      body.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body });
+  const uploadOne = useCallback(async (file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body });
 
-      // Never assume JSON: an infrastructure error (413, timeout, crash)
-      // can return an empty or HTML body — surface the real cause instead
-      // of a JSON parse error.
-      const raw = await res.text();
-      let data: { url?: string; error?: string } = {};
-      try {
-        data = raw ? JSON.parse(raw) : {};
-      } catch {
-        throw new Error(
-          `Serveri u përgjigj me gabim (HTTP ${res.status}). Provoni një imazh më të vogël ose përsëri më vonë.`
-        );
-      }
-      if (!res.ok || !data.url) {
-        throw new Error(data.error ?? `Ngarkimi dështoi (HTTP ${res.status}).`);
-      }
-      setImageUrl(data.url);
-      toast("Imazhi u ngarkua");
-    } catch (e) {
-      toast(e instanceof Error ? e.message : "Ngarkimi dështoi", "error");
-    } finally {
-      setUploading(false);
+    // Never assume JSON: an infrastructure error (413, timeout, crash)
+    // can return an empty or HTML body — surface the real cause instead
+    // of a JSON parse error.
+    const raw = await res.text();
+    let data: { url?: string; error?: string } = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch {
+      throw new Error(
+        `Serveri u përgjigj me gabim (HTTP ${res.status}). Provoni një imazh më të vogël ose përsëri më vonë.`
+      );
     }
+    if (!res.ok || !data.url) {
+      throw new Error(data.error ?? `Ngarkimi dështoi (HTTP ${res.status}).`);
+    }
+    return data.url;
   }, []);
+
+  const upload = useCallback(
+    async (files: FileList | File[]) => {
+      const list = [...files];
+      if (list.length === 0) return;
+      setUploading(true);
+      try {
+        for (const file of list) {
+          const url = await uploadOne(file);
+          setImages((prev) => [...prev, url]);
+        }
+        toast(list.length === 1 ? "Imazhi u ngarkua" : `${list.length} imazhe u ngarkuan`);
+      } catch (e) {
+        toast(e instanceof Error ? e.message : "Ngarkimi dështoi", "error");
+      } finally {
+        setUploading(false);
+      }
+    },
+    [uploadOne]
+  );
 
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragging(false);
-      const file = e.dataTransfer.files?.[0];
-      if (file) void upload(file);
+      if (e.dataTransfer.files?.length) void upload(e.dataTransfer.files);
     },
     [upload]
   );
@@ -142,7 +153,7 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
           .split("\n")
           .map((f) => f.trim())
           .filter(Boolean),
-        imageUrl,
+        images,
         discountEnabled,
         discountStart: discountEnabled && discountStart ? new Date(discountStart).toISOString() : null,
         discountEnd: discountEnabled && discountEnd ? new Date(discountEnd).toISOString() : null,
@@ -317,16 +328,44 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
         <section className="rounded-3xl border border-line bg-surface p-6 card-shadow">
           <h2 className="font-display text-[15px] font-bold text-ink">Pamja vizuale</h2>
 
-          {/* live preview */}
+          {/* live preview — uploaded photos fully replace the render */}
           <div className="mt-4 aspect-[4/3] overflow-hidden rounded-2xl border border-line bg-gradient-to-b from-surface-2 to-surface-3/60">
-            {imageUrl ? (
+            {images[0] ? (
               <div className="relative h-full w-full">
-                <Image src={imageUrl} alt="Imazhi i produktit" fill className="object-contain p-3" unoptimized />
+                <Image src={images[0]} alt="Imazhi i produktit" fill className="object-contain p-3" unoptimized />
               </div>
             ) : (
               <ProductVisual render={render} accent={accent} className="h-full w-full p-4" />
             )}
           </div>
+
+          {images.length > 0 && (
+            <>
+              <p className="mt-3 text-xs font-semibold tracking-wider text-muted uppercase">
+                Imazhet e ngarkuara · i pari është kryesori
+              </p>
+              <ul className="mt-2 grid grid-cols-4 gap-2">
+                {images.map((url, i) => (
+                  <li key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-line bg-surface-2">
+                    <Image src={url} alt={`Imazhi ${i + 1}`} fill className="object-contain p-1" unoptimized />
+                    <button
+                      type="button"
+                      onClick={() => setImages((prev) => prev.filter((u) => u !== url))}
+                      aria-label={`Hiq imazhin ${i + 1}`}
+                      className="absolute top-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-night-950/70 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-ring"
+                    >
+                      <X size={11} />
+                    </button>
+                    {i === 0 && (
+                      <span className="absolute bottom-0 inset-x-0 bg-brand-600/85 py-0.5 text-center text-[9px] font-bold tracking-wider text-white uppercase">
+                        Kryesori
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
 
           <p className="mt-4 text-xs font-semibold tracking-wider text-muted uppercase">Rendera 3D</p>
           <div className="mt-2 grid grid-cols-3 gap-2">
@@ -397,10 +436,11 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
             <input
               type="file"
               accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              multiple
               className="sr-only"
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) void upload(file);
+                if (e.target.files?.length) void upload(e.target.files);
+                e.target.value = "";
               }}
             />
             {uploading ? (
@@ -409,17 +449,19 @@ export function ProductForm({ initial }: { initial?: ProductFormData }) {
               <UploadCloud size={22} className="text-muted" />
             )}
             <span className="text-xs font-semibold text-ink-2">
-              {uploading ? "Duke ngarkuar…" : "Tërhiqni imazhin këtu ose klikoni"}
+              {uploading ? "Duke ngarkuar…" : "Tërhiqni imazhet këtu ose klikoni"}
             </span>
-            <span className="text-[11px] text-muted">PNG, JPG, WEBP, SVG · max 4MB</span>
+            <span className="text-[11px] text-muted">
+              PNG, JPG, WEBP, SVG · max 4MB · fotot zëvendësojnë renderin kudo
+            </span>
           </label>
-          {imageUrl && (
+          {images.length > 0 && (
             <button
               type="button"
-              onClick={() => setImageUrl(null)}
+              onClick={() => setImages([])}
               className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:underline"
             >
-              <X size={12} /> Hiq imazhin, përdor renderin
+              <X size={12} /> Hiq të gjitha imazhet, përdor renderin
             </button>
           )}
         </section>

@@ -18,12 +18,85 @@ export function ProductGallery({
   render,
   accent,
   name,
-  imageUrl,
+  images = [],
 }: {
   render: string;
   accent: string;
   name: string;
-  imageUrl?: string | null;
+  /** Uploaded photos; when non-empty they fully replace the SVG render views. */
+  images?: string[];
+}) {
+  // Uploaded photos win outright — no mixing with the generated views.
+  if (images.length > 0) {
+    return <PhotoGallery images={images} name={name} />;
+  }
+  return <RenderGallery render={render} accent={accent} name={name} />;
+}
+
+function PhotoGallery({ images, name }: { images: string[]; name: string }) {
+  const [active, setActive] = useState(0);
+  const current = images[Math.min(active, images.length - 1)];
+
+  return (
+    <div>
+      <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-line bg-surface card-shadow">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={current}
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.02 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0"
+          >
+            <div className="relative h-full w-full bg-gradient-to-b from-surface-2 to-surface-3/50">
+              <Image
+                src={current}
+                alt={name}
+                fill
+                // unoptimized matches the admin preview: uploads may be SVG,
+                // which the image optimizer rejects without dangerouslyAllowSVG
+                unoptimized
+                className="object-contain p-6 sm:p-10"
+              />
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {images.length > 1 && (
+        <div className="mt-3 grid grid-cols-4 gap-3" role="tablist" aria-label={`Imazhet e ${name}`}>
+          {images.map((url, i) => (
+            <button
+              key={url}
+              role="tab"
+              aria-selected={active === i}
+              aria-label={`Imazhi ${i + 1}`}
+              onClick={() => setActive(i)}
+              className={cn(
+                "relative aspect-[4/3] overflow-hidden rounded-2xl border transition-all focus-ring",
+                active === i
+                  ? "border-brand-500 bg-brand-50 ring-2 ring-brand-500/20 dark:bg-brand-500/10"
+                  : "border-line bg-surface hover:border-brand-200"
+              )}
+            >
+              <Image src={url} alt="" fill unoptimized className="object-contain p-1.5" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RenderGallery({
+  render,
+  accent,
+  name,
+}: {
+  render: string;
+  accent: string;
+  name: string;
 }) {
   const [view, setView] = useState<View>("studio");
 
@@ -41,19 +114,7 @@ export function ProductGallery({
           >
             {view === "studio" && (
               <div className="relative h-full w-full bg-gradient-to-b from-surface-2 to-surface-3/50">
-                {imageUrl ? (
-                  <Image
-                    src={imageUrl}
-                    alt={name}
-                    fill
-                    // unoptimized matches the admin preview: uploads may be SVG,
-                    // which the image optimizer rejects without dangerouslyAllowSVG
-                    unoptimized
-                    className="object-contain p-6 sm:p-10"
-                  />
-                ) : (
-                  <ProductVisual render={render} accent={accent} className="h-full w-full p-6 sm:p-10" />
-                )}
+                <ProductVisual render={render} accent={accent} className="h-full w-full p-6 sm:p-10" />
               </div>
             )}
 

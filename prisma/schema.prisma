@@ -91,6 +91,10 @@ model Product {
   render          String      @default("wall")
   accent          String      @default("blue")
   features        String      @default("[]")
+  /// JSON array of uploaded image URLs; when non-empty these fully replace
+  /// the SVG renders in every gallery. imageUrl mirrors the first entry
+  /// (the cover) so cards/tables/cart snapshots keep a single-image field.
+  images          String      @default("[]")
   imageUrl        String?
   discountEnabled Boolean     @default(false)
   discountStart   DateTime?

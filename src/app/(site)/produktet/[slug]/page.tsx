@@ -8,7 +8,7 @@ import { ProductCard } from "@/components/products/ProductCard";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { Reveal } from "@/components/ui/Reveal";
 import { getProductBySlug, getSimilarProducts, toSnapshot } from "@/lib/products";
-import { CATEGORY_LABELS, getDiscountInfo, parseFeatures } from "@/lib/utils";
+import { CATEGORY_LABELS, getDiscountInfo, parseFeatures, parseImages } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -78,7 +78,7 @@ export default async function ProductPage({
               render={product.render}
               accent={product.accent}
               name={product.name}
-              imageUrl={product.imageUrl}
+              images={parseImages(product.images, product.imageUrl)}
             />
           </Reveal>
           <Reveal delay={0.08}>

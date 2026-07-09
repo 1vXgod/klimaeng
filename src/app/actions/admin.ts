@@ -38,7 +38,8 @@ export type ProductInput = {
   render: string;
   accent: string;
   features: string[];
-  imageUrl?: string | null;
+  /** Uploaded image URLs; empty means "use the SVG render". */
+  images: string[];
   discountEnabled: boolean;
   discountStart?: string | null;
   discountEnd?: string | null;
@@ -79,6 +80,10 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
       return { ok: false, error: "Data e mbarimit duhet të jetë pas datës së fillimit." };
   }
 
+  const images = (input.images ?? []).filter(
+    (u) => typeof u === "string" && u.trim().length > 0
+  );
+
   const data = {
     name: input.name.trim(),
     brand: input.brand?.trim() || "KlimaENG",
@@ -104,7 +109,10 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
     render: input.render,
     accent: input.accent,
     features: JSON.stringify(input.features.filter((f) => f.trim().length > 0)),
-    imageUrl: input.imageUrl || null,
+    images: JSON.stringify(images),
+    // Cover image for cards/tables/cart snapshots; null switches them back
+    // to the SVG render.
+    imageUrl: images[0] ?? null,
     discountEnabled: !!input.discountEnabled,
     discountStart,
     discountEnd,

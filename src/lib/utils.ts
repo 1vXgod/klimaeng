@@ -66,6 +66,25 @@ export function parseFeatures(features: string): string[] {
   }
 }
 
+/**
+ * Uploaded gallery images for a product. Falls back to the legacy single
+ * `imageUrl` for products saved before the `images` column existed, so an
+ * already-uploaded photo keeps replacing the renders.
+ */
+export function parseImages(images: string, imageUrl?: string | null): string[] {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(images);
+  } catch {
+    parsed = [];
+  }
+  const list = Array.isArray(parsed)
+    ? parsed.filter((u): u is string => typeof u === "string" && u.length > 0)
+    : [];
+  if (list.length === 0 && imageUrl) return [imageUrl];
+  return list;
+}
+
 export function discountPercent(price: number, oldPrice?: number | null) {
   if (!oldPrice || oldPrice <= price) return null;
   return Math.round(((oldPrice - price) / oldPrice) * 100);
