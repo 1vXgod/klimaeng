@@ -131,7 +131,7 @@ export function AdminShell({
     .toUpperCase();
 
   return (
-    <div className="flex min-h-dvh bg-bg">
+    <div className="flex min-h-svh bg-bg">
       {/* desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-60 flex-col bg-night-950 lg:flex">
         <Link href="/admin" className="flex items-center gap-2.5 px-6 py-5 focus-ring">

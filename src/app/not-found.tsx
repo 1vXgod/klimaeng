@@ -4,7 +4,7 @@ import { Logo } from "@/components/ui/Logo";
 
 export default function NotFound() {
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-night-950 px-6 text-center text-white">
+    <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-night-950 px-6 text-center text-white">
       <div aria-hidden className="absolute inset-0 blueprint-grid opacity-50" />
       <div
         aria-hidden

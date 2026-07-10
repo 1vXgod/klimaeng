@@ -79,7 +79,7 @@ export function Hero() {
       ))}
 
       <div className="container-site relative">
-        <div className="grid min-h-[calc(100dvh-4rem)] items-center gap-12 pt-28 pb-16 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-10">
+        <div className="grid min-h-[calc(100svh-4rem)] items-center gap-12 pt-28 pb-16 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24 lg:pb-10">
           {/* ------ copy ------ */}
           <div className="relative z-10 max-w-xl">
             <motion.div

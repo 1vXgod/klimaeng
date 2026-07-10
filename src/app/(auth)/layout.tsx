@@ -5,7 +5,7 @@ import { Logo } from "@/components/ui/Logo";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid min-h-svh lg:grid-cols-[1fr_1.1fr]">
       {/* brand panel */}
       <aside className="relative hidden overflow-hidden bg-night-950 p-12 text-white lg:flex lg:flex-col">
         <div aria-hidden className="absolute inset-0 blueprint-grid opacity-50" />

@@ -16,7 +16,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-6 text-center">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-bg px-6 text-center">
       <span className="grid h-16 w-16 place-items-center rounded-full bg-red-50 text-red-500 dark:bg-red-500/10">
         <TriangleAlert size={28} />
       </span>
