@@ -3,6 +3,7 @@
 import { Check, Heart, Minus, Plus, Scale, ShieldCheck, ShoppingBag, Timer, Truck, Wrench } from "lucide-react";
 import { useState } from "react";
 import { BtuPricingCards } from "@/components/products/BtuPricingCards";
+import { useCapacity } from "@/components/products/ProductSpecs";
 import { Badge } from "@/components/ui/Badge";
 import { EnergyBadge } from "@/components/ui/EnergyBadge";
 import { toast } from "@/components/ui/Toast";
@@ -23,7 +24,9 @@ export type BuyBoxProduct = ProductSnapshot & {
 export function BuyBox({ product }: { product: BuyBoxProduct }) {
   const mounted = useMounted();
   const [qty, setQty] = useState(1);
-  const [selectedIdx, setSelectedIdx] = useState(0);
+  // Shared with the specs table further down the page, so picking a
+  // capacity here switches the displayed specifications too.
+  const { index: selectedIdx, setIndex: setSelectedIdx } = useCapacity();
   const cart = useCart();
   const wishlist = useWishlist();
   const compare = useCompare();

@@ -202,6 +202,124 @@ export function getBtuVariants(p: BtuVariantSource, now: number = Date.now()): B
   return variants;
 }
 
+/* ------------------------------------------------------------------ */
+/* Per-capacity technical specifications                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One capacity's technical specifications, stored in `Product.specs` as a
+ * JSON object keyed by BTU ("12000" | "18000" | "24000"). Free-text fields
+ * are displayed exactly as typed (units included); numeric fields get
+ * their unit appended at display time.
+ */
+export type CapacitySpecValues = {
+  coolingCapacity?: string;
+  heatingCapacity?: string;
+  powerConsumption?: string;
+  airflow?: string;
+  energyCool?: string;
+  energyHeat?: string;
+  seer?: number | null;
+  scop?: number | null;
+  noiseDb?: number | null;
+  coverageM2?: number | null;
+  refrigerant?: string;
+  dimensions?: string;
+  weight?: string;
+};
+
+export const SPEC_TEXT_KEYS = [
+  "coolingCapacity",
+  "heatingCapacity",
+  "powerConsumption",
+  "airflow",
+  "energyCool",
+  "energyHeat",
+  "refrigerant",
+  "dimensions",
+  "weight",
+] as const;
+
+export const SPEC_NUMBER_KEYS = ["seer", "scop", "noiseDb", "coverageM2"] as const;
+
+/** Parses the `Product.specs` JSON column; malformed data yields {}. */
+export function parseSpecs(specs: string): Record<string, CapacitySpecValues> {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(specs);
+  } catch {
+    return {};
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+  const result: Record<string, CapacitySpecValues> = {};
+  for (const [key, raw] of Object.entries(parsed)) {
+    if (!/^\d{4,6}$/.test(key) || !raw || typeof raw !== "object") continue;
+    const entry: CapacitySpecValues = {};
+    const obj = raw as Record<string, unknown>;
+    for (const k of SPEC_TEXT_KEYS) {
+      if (typeof obj[k] === "string" && obj[k].trim()) entry[k] = obj[k].trim();
+    }
+    for (const k of SPEC_NUMBER_KEYS) {
+      const v = obj[k];
+      if (typeof v === "number" && Number.isFinite(v) && v > 0) entry[k] = v;
+    }
+    if (Object.keys(entry).length > 0) result[key] = entry;
+  }
+  return result;
+}
+
+/**
+ * Base-capacity specs assembled from the legacy flat columns, used as the
+ * fallback for products saved before per-capacity specs existed.
+ */
+export function specsFromFlat(p: {
+  coverageM2?: number | null;
+  energyCool?: string | null;
+  energyHeat?: string | null;
+  seer?: number | null;
+  scop?: number | null;
+  refrigerant?: string | null;
+  noiseDb?: number | null;
+}): CapacitySpecValues {
+  return {
+    ...(p.energyCool ? { energyCool: p.energyCool } : {}),
+    ...(p.energyHeat ? { energyHeat: p.energyHeat } : {}),
+    ...(p.seer ? { seer: p.seer } : {}),
+    ...(p.scop ? { scop: p.scop } : {}),
+    ...(p.noiseDb ? { noiseDb: p.noiseDb } : {}),
+    ...(p.coverageM2 ? { coverageM2: p.coverageM2 } : {}),
+    ...(p.refrigerant ? { refrigerant: p.refrigerant } : {}),
+  };
+}
+
+/** Display order + labels for the specs table on the product page. */
+const SPEC_DISPLAY: { key: keyof CapacitySpecValues; label: string; format?: (v: string | number) => string }[] = [
+  { key: "coolingCapacity", label: "Kapaciteti i ftohjes" },
+  { key: "heatingCapacity", label: "Kapaciteti i ngrohjes" },
+  { key: "powerConsumption", label: "Konsumi i energjisë" },
+  { key: "energyCool", label: "Klasa energjetike (ftohje)" },
+  { key: "energyHeat", label: "Klasa energjetike (ngrohje)" },
+  { key: "seer", label: "SEER" },
+  { key: "scop", label: "SCOP" },
+  { key: "airflow", label: "Rrjedha e ajrit" },
+  { key: "noiseDb", label: "Niveli i zhurmës", format: (v) => `${v} dB` },
+  { key: "coverageM2", label: "Mbulimi", format: (v) => `deri në ${v} m²` },
+  { key: "refrigerant", label: "Gazi ftohës" },
+  { key: "dimensions", label: "Dimensionet" },
+  { key: "weight", label: "Pesha" },
+];
+
+/** [label, value] rows for one capacity's specs, empty fields skipped. */
+export function specDisplayRows(s: CapacitySpecValues): [string, string][] {
+  const rows: [string, string][] = [];
+  for (const { key, label, format } of SPEC_DISPLAY) {
+    const v = s[key];
+    if (v === undefined || v === null || v === "") continue;
+    rows.push([label, format ? format(v) : String(v)]);
+  }
+  return rows;
+}
+
 /** "12 ditë, 5 orë" style remaining-time label for a discount timer. */
 export function formatRemaining(ms: number): string {
   const totalMinutes = Math.max(1, Math.round(ms / 60000));

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { prisma } from "@/lib/prisma";
-import { parseFeatures, parseImages } from "@/lib/utils";
+import { parseFeatures, parseImages, parseSpecs, specsFromFlat } from "@/lib/utils";
 
 export const metadata = { title: "Ndrysho produktin" };
 
@@ -13,6 +13,15 @@ export default async function EditProductPage({
   const { id } = await params;
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) notFound();
+
+  // Products saved before per-capacity specs keep their values in the flat
+  // columns; surface those as the base capacity's specs in the form.
+  const specs = parseSpecs(product.specs);
+  const baseKey = String(product.btu ?? 12000);
+  if (!specs[baseKey]) {
+    const flat = specsFromFlat(product);
+    if (Object.keys(flat).length > 0) specs[baseKey] = flat;
+  }
 
   return (
     <div>
@@ -30,13 +39,7 @@ export default async function EditProductPage({
           shortDesc: product.shortDesc,
           description: product.description,
           btu: product.btu,
-          coverageM2: product.coverageM2,
-          energyCool: product.energyCool,
-          energyHeat: product.energyHeat,
-          seer: product.seer,
-          scop: product.scop,
-          refrigerant: product.refrigerant,
-          noiseDb: product.noiseDb,
+          specs,
           wifi: product.wifi,
           inverter: product.inverter,
           warrantyYears: product.warrantyYears,

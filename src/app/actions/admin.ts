@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { SPEC_NUMBER_KEYS, SPEC_TEXT_KEYS, type CapacitySpecValues } from "@/lib/utils";
 
 type Result = { ok: true } | { ok: false; error: string };
 
@@ -22,13 +23,13 @@ export type ProductInput = {
   shortDesc: string;
   description: string;
   btu?: number | null;
-  coverageM2?: number | null;
-  energyCool?: string | null;
-  energyHeat?: string | null;
-  seer?: number | null;
-  scop?: number | null;
-  refrigerant?: string | null;
-  noiseDb?: number | null;
+  /**
+   * Technical specifications keyed by BTU capacity ("12000" | "18000" |
+   * "24000"). The base capacity's entry is mirrored into the flat spec
+   * columns (energyCool, seer, noiseDb, …) so cards, filters, compare and
+   * the API keep working off single values.
+   */
+  specs: Record<string, CapacitySpecValues>;
   wifi: boolean;
   inverter: boolean;
   warrantyYears: number;
@@ -55,6 +56,30 @@ export type ProductInput = {
   btu24Price?: number | null;
   btu24SalePrice?: number | null;
 };
+
+/**
+ * Whitelists spec capacities/fields and coerces values; capacities whose
+ * entry ends up empty are dropped entirely (= that capacity is disabled).
+ */
+function sanitizeSpecs(specs: ProductInput["specs"]): Record<string, CapacitySpecValues> {
+  const clean: Record<string, CapacitySpecValues> = {};
+  if (!specs || typeof specs !== "object") return clean;
+  for (const [key, raw] of Object.entries(specs).slice(0, 6)) {
+    if (!/^\d{4,6}$/.test(key) || !raw || typeof raw !== "object") continue;
+    const entry: CapacitySpecValues = {};
+    const obj = raw as Record<string, unknown>;
+    for (const k of SPEC_TEXT_KEYS) {
+      const v = obj[k];
+      if (typeof v === "string" && v.trim()) entry[k] = v.trim().slice(0, 200);
+    }
+    for (const k of SPEC_NUMBER_KEYS) {
+      const v = Number(obj[k]);
+      if (Number.isFinite(v) && v > 0) entry[k] = v;
+    }
+    if (Object.keys(entry).length > 0) clean[key] = entry;
+  }
+  return clean;
+}
 
 function slugify(name: string) {
   return name
@@ -115,6 +140,11 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
     (u) => typeof u === "string" && u.trim().length > 0
   );
 
+  const specs = sanitizeSpecs(input.specs);
+  // The base capacity's specs feed the flat columns used by cards, filters,
+  // the compare page and the public API.
+  const baseSpec = specs[String(input.btu || 12000)] ?? {};
+
   const data = {
     name: input.name.trim(),
     brand: input.brand?.trim() || "KlimaENG",
@@ -124,13 +154,14 @@ export async function saveProduct(input: ProductInput): Promise<Result & { id?: 
     shortDesc: input.shortDesc?.trim() ?? "",
     description: input.description?.trim() ?? "",
     btu: input.btu || null,
-    coverageM2: input.coverageM2 || null,
-    energyCool: input.energyCool || null,
-    energyHeat: input.energyHeat || null,
-    seer: input.seer || null,
-    scop: input.scop || null,
-    refrigerant: input.refrigerant?.trim() || null,
-    noiseDb: input.noiseDb || null,
+    coverageM2: baseSpec.coverageM2 ?? null,
+    energyCool: baseSpec.energyCool ?? null,
+    energyHeat: baseSpec.energyHeat ?? null,
+    seer: baseSpec.seer ?? null,
+    scop: baseSpec.scop ?? null,
+    refrigerant: baseSpec.refrigerant ?? null,
+    noiseDb: baseSpec.noiseDb ?? null,
+    specs: JSON.stringify(specs),
     wifi: !!input.wifi,
     inverter: !!input.inverter,
     warrantyYears: input.warrantyYears || 2,

@@ -3,9 +3,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BuyBox } from "@/components/products/BuyBox";
-import { EnergyLabel } from "@/components/products/EnergyLabel";
 import { ProductCard } from "@/components/products/ProductCard";
 import { ProductGallery } from "@/components/products/ProductGallery";
+import {
+  CapacityEnergyLabel,
+  CapacityProvider,
+  SpecsTable,
+  type EnergyEntry,
+  type SpecsEntry,
+} from "@/components/products/ProductSpecs";
 import { Reveal } from "@/components/ui/Reveal";
 import { getProductBySlug, getSimilarProducts, toSnapshot } from "@/lib/products";
 import {
@@ -15,6 +21,9 @@ import {
   getDiscountInfo,
   parseFeatures,
   parseImages,
+  parseSpecs,
+  specDisplayRows,
+  specsFromFlat,
 } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -44,26 +53,48 @@ export default async function ProductPage({
   const similar = await getSimilarProducts(product, 4);
   const features = parseFeatures(product.features);
   const variants = getBtuVariants(product);
-  const capacities = variants.flatMap((v) => (v.btu !== null ? [formatBtu(v.btu)] : []));
 
-  const specs: [string, string][] = [
-    ["Marka", product.brand],
-    ["Kategoria", CATEGORY_LABELS[product.category] ?? product.category],
-    ...(capacities.length ? ([["Kapaciteti", capacities.join(" / ")]] as [string, string][]) : []),
-    ...(product.coverageM2 ? ([["Mbulimi", `deri në ${product.coverageM2} m²`]] as [string, string][]) : []),
-    ...(product.energyCool ? ([["Klasa energjetike (ftohje)", product.energyCool]] as [string, string][]) : []),
-    ...(product.energyHeat ? ([["Klasa energjetike (ngrohje)", product.energyHeat]] as [string, string][]) : []),
-    ...(product.seer ? ([["SEER", String(product.seer)]] as [string, string][]) : []),
-    ...(product.scop ? ([["SCOP", String(product.scop)]] as [string, string][]) : []),
-    ...(product.refrigerant ? ([["Gazi ftohës", product.refrigerant]] as [string, string][]) : []),
-    ...(product.noiseDb ? ([["Niveli i zhurmës", `${product.noiseDb} dB`]] as [string, string][]) : []),
-    ["Teknologji inverter", product.inverter ? "Po" : "Jo"],
-    ["Kontroll Wi-Fi", product.wifi ? "Po" : "Jo"],
-    ["Garancia", `${product.warrantyYears} vjet`],
-  ];
+  // Per-capacity specifications, one entry per purchasable variant. A
+  // capacity without its own specs (and legacy products with an empty
+  // `specs` column) falls back to the base capacity's values, which in
+  // turn fall back to the flat spec columns.
+  const parsedSpecs = parseSpecs(product.specs);
+  const baseSpec = parsedSpecs[String(product.btu ?? 12000)] ?? specsFromFlat(product);
+  const specFor = (btu: number | null, i: number) =>
+    i === 0 ? baseSpec : ((btu !== null && parsedSpecs[String(btu)]) || baseSpec);
+
+  const specEntries: SpecsEntry[] = variants.map((v, i) => {
+    const spec = specFor(v.btu, i);
+    return {
+      btu: v.btu,
+      rows: [
+        ["Marka", product.brand],
+        ["Kategoria", CATEGORY_LABELS[product.category] ?? product.category],
+        ...(v.btu !== null ? ([["Kapaciteti", formatBtu(v.btu)]] as [string, string][]) : []),
+        ...specDisplayRows(spec),
+        ["Teknologji inverter", product.inverter ? "Po" : "Jo"],
+        ["Kontroll Wi-Fi", product.wifi ? "Po" : "Jo"],
+        ["Garancia", `${product.warrantyYears} vjet`],
+      ],
+    };
+  });
+
+  const energyEntries: EnergyEntry[] = variants.map((v, i) => {
+    const spec = specFor(v.btu, i);
+    if (!spec.energyCool && !spec.energyHeat) return null;
+    return {
+      energyCool: spec.energyCool ?? null,
+      energyHeat: spec.energyHeat ?? null,
+      seer: spec.seer ?? null,
+      scop: spec.scop ?? null,
+      noiseDb: spec.noiseDb ?? null,
+    };
+  });
+  const hasEnergyLabel = energyEntries.some(Boolean);
 
   return (
     <div className="pt-24 pb-20 md:pt-32">
+      <CapacityProvider>
       <div className="container-site">
         {/* breadcrumb */}
         <nav aria-label="Breadcrumb" className="mb-7 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px] text-muted">
@@ -135,37 +166,17 @@ export default async function ProductPage({
 
             <Reveal delay={0.1}>
               <h3 className="mt-10 font-display text-lg font-bold text-ink">Specifikat teknike</h3>
-              <div className="mt-4 overflow-x-auto rounded-2xl border border-line">
-                <table className="w-full min-w-[280px] text-sm">
-                  <tbody className="divide-y divide-line">
-                    {specs.map(([key, value], i) => (
-                      <tr key={key} className={i % 2 === 0 ? "bg-surface" : "bg-surface-2/50"}>
-                        <th scope="row" className="w-1/2 px-4 py-2.5 text-left font-medium text-muted sm:px-5 sm:py-3">
-                          {key}
-                        </th>
-                        <td className="px-4 py-2.5 font-semibold text-ink sm:px-5 sm:py-3">{value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <SpecsTable entries={specEntries} />
             </Reveal>
           </div>
 
-          {(product.energyCool || product.energyHeat) && (
+          {hasEnergyLabel && (
             <Reveal delay={0.12}>
               <div className="lg:sticky lg:top-28">
-                <h3 className="mb-4 font-display text-lg font-bold text-ink">
-                  Etiketa energjetike
-                </h3>
-                <EnergyLabel
+                <CapacityEnergyLabel
                   brand={product.brand}
                   model={product.name}
-                  energyCool={product.energyCool}
-                  energyHeat={product.energyHeat}
-                  seer={product.seer}
-                  scop={product.scop}
-                  noiseDb={product.noiseDb}
+                  entries={energyEntries}
                 />
               </div>
             </Reveal>
@@ -199,6 +210,7 @@ export default async function ProductPage({
           </div>
         )}
       </div>
+      </CapacityProvider>
     </div>
   );
 }

@@ -109,6 +109,12 @@ model Product {
   btu24Enabled    Boolean     @default(false)
   btu24Price      Int?
   btu24SalePrice  Int?
+  /// Per-capacity technical specifications: JSON object keyed by BTU
+  /// ("12000" | "18000" | "24000") → spec fields (see CapacitySpecValues in
+  /// lib/utils.ts). A missing key falls back to the base capacity's specs.
+  /// The base entry is also mirrored into the flat spec columns above so
+  /// cards, filters, compare and the API keep a single-value view.
+  specs           String      @default("{}")
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   orderItems      OrderItem[]
