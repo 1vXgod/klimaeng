@@ -11,6 +11,12 @@ import { useLiveDiscount, useMounted } from "@/lib/hooks";
 import { cn, discountPercent, formatRemaining, type BtuVariant, type DiscountInfo } from "@/lib/utils";
 import { MAX_COMPARE, useCart, useCompare, useWishlist, type ProductSnapshot } from "@/stores/shop";
 
+/** A price variant enriched with its own capacity's energy classes. */
+export type BuyBoxVariant = BtuVariant & {
+  energyCool: string | null;
+  energyHeat: string | null;
+};
+
 export type BuyBoxProduct = ProductSnapshot & {
   shortDesc: string;
   stock: number;
@@ -18,7 +24,7 @@ export type BuyBoxProduct = ProductSnapshot & {
   badge?: string | null;
   discount: DiscountInfo;
   /** Enabled BTU price variants, base capacity first (see getBtuVariants). */
-  variants: BtuVariant[];
+  variants: BuyBoxVariant[];
 };
 
 export function BuyBox({ product }: { product: BuyBoxProduct }) {
@@ -64,8 +70,8 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
       <p className="mt-3 text-[15px] leading-relaxed text-ink-2">{product.shortDesc}</p>
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
-        {product.energyCool && <EnergyBadge value={product.energyCool} mode="cool" />}
-        {product.energyHeat && <EnergyBadge value={product.energyHeat} mode="heat" />}
+        {selected.energyCool && <EnergyBadge value={selected.energyCool} mode="cool" />}
+        {selected.energyHeat && <EnergyBadge value={selected.energyHeat} mode="heat" />}
         {(selected.btu ?? product.btu) && (
           <span className="rounded-lg bg-surface-2 px-2.5 py-1 text-xs font-bold text-ink-2">
             {(selected.btu ?? product.btu)!.toLocaleString("de-DE")} BTU
@@ -79,8 +85,6 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
           variants={product.variants}
           selected={selectedIdx}
           onSelect={setSelectedIdx}
-          energyCool={product.energyCool}
-          energyHeat={product.energyHeat}
         />
       </div>
       <p className="mt-2 text-xs text-muted">Përfshirë TVSH-në · Pa kosto të fshehura</p>
@@ -141,8 +145,8 @@ export function BuyBox({ product }: { product: BuyBoxProduct }) {
                 imageUrl: product.imageUrl,
                 category: product.category,
                 btu: selected.btu ?? product.btu,
-                energyCool: product.energyCool,
-                energyHeat: product.energyHeat,
+                energyCool: selected.energyCool,
+                energyHeat: selected.energyHeat,
                 variantBtu: isBaseSelected ? null : selected.btu,
               },
               qty

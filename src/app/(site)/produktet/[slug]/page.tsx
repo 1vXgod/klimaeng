@@ -92,6 +92,18 @@ export default async function ProductPage({
   });
   const hasEnergyLabel = energyEntries.some(Boolean);
 
+  // Buy-box variants carry their own capacity's energy classes so the
+  // badges by the title, the pricing-card markers and the cart snapshot
+  // all follow the selected capacity instead of the base columns.
+  const buyBoxVariants = variants.map((v, i) => {
+    const spec = specFor(v.btu, i);
+    return {
+      ...v,
+      energyCool: spec.energyCool ?? null,
+      energyHeat: spec.energyHeat ?? null,
+    };
+  });
+
   return (
     <div className="pt-24 pb-20 md:pt-32">
       <CapacityProvider>
@@ -130,7 +142,7 @@ export default async function ProductPage({
                 warrantyYears: product.warrantyYears,
                 badge: product.badge,
                 discount: getDiscountInfo(product),
-                variants,
+                variants: buyBoxVariants,
               }}
             />
           </Reveal>

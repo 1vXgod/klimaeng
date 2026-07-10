@@ -15,14 +15,11 @@ export function BtuPricingCards({
   variants,
   selected,
   onSelect,
-  energyCool,
-  energyHeat,
 }: {
-  variants: BtuVariant[];
+  /** Each card renders its own capacity's energy classes when provided. */
+  variants: (BtuVariant & { energyCool?: string | null; energyHeat?: string | null })[];
   selected: number;
   onSelect: (index: number) => void;
-  energyCool?: string | null;
-  energyHeat?: string | null;
 }) {
   // The discount window is product-level, so a single live ticker covers
   // every card; variants only differ in whether they have a sale pair.
@@ -31,6 +28,7 @@ export function BtuPricingCards({
   const saleVisible = (v: BtuVariant) =>
     v.oldPrice !== null && v.discount.active && (!v.discount.endsAt || live.active);
   const anySale = variants.some(saleVisible);
+  const anyEnergy = variants.some((v) => v.energyCool || v.energyHeat);
   const selectable = variants.length > 1;
 
   return (
@@ -94,10 +92,18 @@ export function BtuPricingCards({
               {formatEur(v.price)}
             </span>
 
-            {(energyCool || energyHeat) && (
-              <span className="mt-3 flex items-start justify-center gap-4">
-                {energyCool && <EnergyDot value={energyCool} tone="cool" />}
-                {energyHeat && <EnergyDot value={energyHeat} tone="heat" />}
+            {anyEnergy && (
+              // A card without energy classes keeps an invisible row so all
+              // cards stay the same height (same trick as the sale row).
+              <span
+                className={cn(
+                  "mt-3 flex items-start justify-center gap-4",
+                  !v.energyCool && !v.energyHeat && "invisible"
+                )}
+              >
+                {v.energyCool && <EnergyDot value={v.energyCool} tone="cool" />}
+                {v.energyHeat && <EnergyDot value={v.energyHeat} tone="heat" />}
+                {!v.energyCool && !v.energyHeat && <EnergyDot value="A" tone="cool" />}
               </span>
             )}
           </>

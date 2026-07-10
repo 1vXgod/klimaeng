@@ -114,7 +114,9 @@ export function CapacityEnergyLabel({
   entries: EnergyEntry[];
 }) {
   const { index } = useCapacity();
-  const entry = entries[index] ?? entries[0];
+  // No fallback to the base entry here: a capacity without energy data
+  // hides the label instead of showing another capacity's values.
+  const entry = entries[index] ?? null;
   if (!entry) return null;
 
   return (
